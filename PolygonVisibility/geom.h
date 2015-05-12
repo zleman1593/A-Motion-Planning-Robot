@@ -4,7 +4,9 @@
 #define __geom_h
 #include <vector>
 const double RADIUS = 9.0;
-const double EPSILON = 0.01;
+const double EPSILON = 0.001;
+
+
 
 typedef struct _point2d {
   double x,y;

@@ -75,7 +75,7 @@ void connectExtendedLineIntersections(void);
 int hasFinishedPolygon = 0; // Whether the user has finished drawing the polygon.
 point2D visiblityPoint; // The point of visibility inside the polygon.
 point2D firstClick = {0, 0};
-point2D secondClick = {0, 0};
+point2D secondClick = {16, 16};
 
 const int WINDOWSIZE = 500;
 const int NUM_SEGMENTS = 800; // Number of segments that form the circle.
@@ -111,15 +111,67 @@ vector<point2D> visibleAreaVertices;
 // The intersection points of the extended lines with the egdes of the polygon.
 vector<point2D> extendedLineIntersections;
 
+//Returns  whether at goal state
+bool atGoal(double robotCenterX, double robotCenterY){
+    
+    if (doubleEqual(robotCenterX,secondClick.x) && doubleEqual(robotCenterY,secondClick.y)) {
+        return true;
+    }
+    
+    return false;
+}
+
+//Check if a point is outside of the window
+bool outOfBounds(point2D pointToCheck){
+    
+    if (pointToCheck.x < 0 || pointToCheck.x > WINDOWSIZE || pointToCheck.y < 0 || pointToCheck.y > WINDOWSIZE ) {
+        return true;
+    }
+    return false;
+}
+
+
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
-bool robotHitsObstacle(double robotCenterX, double robotCenterY ){
+bool robotHitsObstacle(double robotCenterX, double robotCenterY){
+    int constant = 5;
+    
+    point2D bottomRight = {robotCenterX + constant, robotCenterY - constant};
+    point2D bottomLeft =  {robotCenterX - constant, robotCenterY - constant};
+    point2D topLeft =  {robotCenterX - constant, robotCenterY + constant};
+    point2D topRight =  {robotCenterX + constant, robotCenterY + constant};
+    
+    //First check if any of the points are out of bounds
+    if (outOfBounds(bottomRight) || outOfBounds(bottomLeft) || outOfBounds(topLeft) || outOfBounds(topRight)){
+        return true;
+    }
     
     
-    return true;
+    segment2D leftVert = {topLeft,bottomLeft};
+    segment2D rightVert =  {topRight,bottomRight};
+    segment2D top =  {topLeft,topRight};
+    segment2D bottom =  {bottomLeft,bottomRight};
+    
+    
+    for (int i = 0; i < polygons.size(); i++) {
+        
+        vector<segment2D> polygonSegments = polygons.at(i);
+        
+        for (int j = 0; j < polygonSegments.size(); j++) {
+            if (intersect(leftVert, polygonSegments.at(j)) ||  intersect(rightVert, polygonSegments.at(j))  ||  intersect(top, polygonSegments.at(j))  || intersect(bottom, polygonSegments.at(j)) ){
+                return true;
+            }
+            
+        }
+        
+        
+    }
+    
+    
+    return false;
 }
 
 //Adds all viable sucessor states to current state to the priority queue
-void generateSuccessors(State robotState){
+State* generateSuccessors(State robotState){
     
     point2D robotCenter = robotState.location;
     
@@ -132,6 +184,9 @@ void generateSuccessors(State robotState){
         nextPossibleState->path.push_back(nextPossibleState->location );
         nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
         nextStateQueue.push(*nextPossibleState);
+        if (atGoal(robotCenter.x, robotCenter.y + 1)) {
+            return nextPossibleState;
+        }
         
     }
     //Down
@@ -143,6 +198,10 @@ void generateSuccessors(State robotState){
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location );
         nextStateQueue.push(*nextPossibleState);
+        
+        if (atGoal(robotCenter.x, robotCenter.y - 1)) {
+            return nextPossibleState;
+        }
     }
     
     //Right
@@ -154,6 +213,10 @@ void generateSuccessors(State robotState){
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location);
         nextStateQueue.push(*nextPossibleState);
+        
+        if (atGoal(robotCenter.x + 1, robotCenter.y )) {
+            return nextPossibleState;
+        }
     }
     
     //Left
@@ -165,41 +228,60 @@ void generateSuccessors(State robotState){
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location );
         nextStateQueue.push(*nextPossibleState);
+        
+        if (atGoal(robotCenter.x - 1, robotCenter.y )) {
+            return nextPossibleState;
+        }
     }
+    return NULL;
     
 }
 
 //Called to find the shortest path around the obstacles. Returns this path.
 vector<point2D>  findShortestPath(){
     
-    double startingX = 4;
-    double startingY = 4;
+    //make sure a position is not revisited. use a constant time structure
     
-    generateSuccessorsOfState(currentState);
+    State currentState;
+    while (!nextStateQueue.empty()) {
+        
+       currentState = nextStateQueue.top();
+        nextStateQueue.pop();
+        State *terminal = generateSuccessors(currentState);
+        if (terminal != NULL) {
+            return terminal->path;
+        }
+        
+    }
     
-    double nextPossibleState->path.size() = 0;
-    State * nextPossibleState = new State();
-    nextPossibleState->location = {x, y};
-    nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
-    nextStateQueue.push(*nextPossibleState);
+    vector<point2D>  empty;
+    return empty;
     
 }
 
 
+void initPathFind(){
+    
+    double startingX = 34;
+    double startingY = 34;
+    
+    State * nextPossibleState = new State();
+    nextPossibleState->location = {startingX, startingY};
+    nextPossibleState->distance = distance_(nextPossibleState->location,secondClick);
+     generateSuccessors(*nextPossibleState);
+}
 
 
 
 /* ****************************** */
 int main(int argc, char** argv) {
     
+initPathFind();
     
-    findShortestPath();
+  vector<point2D> shortestpath =  findShortestPath();
     
-    
-    
-    
-    State test =  nextStateQueue.top();
-    nextStateQueue.pop();
+
+  
     
     /* initialize GLUT  */
     glutInit(&argc, argv);
