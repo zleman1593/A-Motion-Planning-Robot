@@ -1,0 +1,62 @@
+Zackery Leman & Ivy Xing
+Computational Geometry
+A C++ implementation to compute the visible area of a simple polygon.
+
+****** General Information ******
+
+- Mouse:
+Click: Moves the visibility point to the mouse click location and computes visible area.
+Drag: Continuously recomputes visible area as the visibility point location moves with the mouse.
+
+- Key press:
+'m': Makes the visibility point move automatically.
+'s': Clears the visible area computation.
+'e': Clears the canvas.
+'q': Quits the program.
+
+- Color and shapes:
+The polygon is drawn with RED LINES.
+The vertices have HOLLOW RED CIRCLES drawn around them until the polygon is complete.
+The visibility point is centered in a FILLED YELLOW CIRCLE.
+The visible area is composed of multiple FILLED GREEN TRIANGLES.
+
+- Algorithm:
+a. Draw lines from visibility point to vertices and only keep the lines that do not intersect with the polygon.
+b. Extend these lines and only keep the lines that properly intersect the polygon an odd number of times.
+c. Cut these lines so that their endpoints rest on the polygon edges. Also keep the lines where the endpoints do not need to be extended.
+d. The vertices of these lines are the vertices of the polygon that forms the visible area.
+e. Connect two visible vertices if the segment they form overlaps with a polygon edge.
+f. Color the visible area by filling in each traingle formed by the visibility point and the connecting segments.
+
+********** Instructions **********
+
+(1) Drawing the polygon and the visibility point:
+- Click anywhere to draw a polygon vertex.
+- When you draw the next vertex, an edge will be drawn to connect them (see a in Notes).
+- To finish drawing the polygon, click back on the first vertex.
+- After you finish the polygon, the next mouse click draws the visibility point (see b in Notes).
+- Notes:
+    a. If the mouse click leads to polygon self-intersection, no vertex/edge will be drawn.
+    b. If the visibility point is outside the polygon, it won't be drawn.
+    c. You may press 'e' anytime to clear the canvas.
+
+(2) Computing the visibile area:
+- The visible area is automatically computed and drawn after the visibility point is drawn.
+- The visible area is recomputed and redrawn whenever the visibility point changes.
+- Notes:
+    a. To see different stages of the process, comment out methods in the computeVisibleArea(void) function in lines 390-397.
+    b. You may press 's' to erase the visible area coloring.
+
+(3) Changing the visibility point:
+- After the visibility point is drawn, clicking anywhere inside the polygon will change the point's position.
+- You may drag the visibility point to change its position.
+- Notes:
+    a. You may press 'm' to make the visibility point change automatically.
+
+
+
+
+
+
+
+
