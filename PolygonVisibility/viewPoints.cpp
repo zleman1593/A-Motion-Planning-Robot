@@ -6,6 +6,10 @@
  
  
  */
+#include <iostream>
+#include <map>
+#include <string>
+#include <sstream>
 #include <queue>
 #include <vector>
 #include "geom.h"
@@ -35,51 +39,45 @@ GLfloat cyan[3] = {0.0, 1.0, 1.0};
 
 GLint fillmode = 0;
 
-enum Direction {UP, DOWN, LEFT, RIGHT};
 
 /**** Forward declarations of functions ****/
+
 /* Display and responsive functions */
 void display(void);
 void keypress(unsigned char key, int x, int y);
 void mouse(int button, int state, int Mx, int My);
-void drag(int x, int y);
 void startMoving(void);
-int move(Direction d, double offset);
-int canMove(Direction d);
-int hitWall(point2D p, Direction d, double radius);
+
+
+
+
 /* Drawing functions */
 void drawCircle(float cx, float cy, float r, int num_segments);
 void drawCirclesAroundVertices(void);
 void drawSegment(segment2D s);
 void drawPolygon(void);
-void fillTraingle(point2D a, point2D b, point2D c);
 void erase(void);
+
 /* Helper computation functions */
 int intersectPolygon(segment2D current);
 int insidePolygon(point2D p);
-void computeSlopes(void);
 void clearVectors(void);
 point2D closestEdgePoint(segment2D line, vector<int> edgeIndices);
-/* Main computation functions */
-void computeVisibleArea(void);
-// Helper function to computeVisibleArea(void)
-void computeVisibleVertices(void);
-// Helper function to computeVisibleArea(void)
-void extendVisibleVertices(void);
-// Helper function to extendVisibleVertices(void)
-void refineVisibleVerticesExtensions(segment2D extendedLine, int index);
-// Helper function to computeVisibleArea(void)
-void connectExtendedLineIntersections(void);
+
 
 /**** Global variables ****/
 int hasFinishedPolygon = 0; // Whether the user has finished drawing the polygon.
 point2D visiblityPoint; // The point of visibility inside the polygon.
 point2D firstClick = {0, 0};
-point2D secondClick = {16, 16};
+point2D secondClick = {0, 0};
+bool startHasBeenSet = false;
+
+
+std::map<std::string, std::string> duplicateMap;
 
 const int WINDOWSIZE = 500;
 const int NUM_SEGMENTS = 800; // Number of segments that form the circle.
-const double OFFSET = 1; // Number of pixels the point moves.
+
 
 //Priority queue comparison function
 class CompareStateDistance {
@@ -91,14 +89,15 @@ public:
     }
 };
 
-
-
 //NOTE: all the structures below need to be global so that they can be rendered
+
 // The array of segments that form the polygon.
 vector<vector<segment2D>>  polygons;
 vector<segment2D>  polygonSegments;
 priority_queue<State,vector<State>,CompareStateDistance> nextStateQueue;
 
+
+vector<point2D>  exploredVector;
 
 // The vertices of the polygon.
 vector<point2D> polygonVertices;
@@ -110,6 +109,29 @@ vector<double>visibleAreaSegmentSlopes;
 vector<point2D> visibleAreaVertices;
 // The intersection points of the extended lines with the egdes of the polygon.
 vector<point2D> extendedLineIntersections;
+
+vector<point2D> shortestpath;
+
+
+
+
+/*Method to prevent locations from being revisited. Done in linear time with hashmap*/
+bool hasBeenToSate(double x, double y) {
+    
+        std::ostringstream oss;
+        oss << floor(x) << " " << floor(y);
+        std::string tempString = oss.str();
+        
+        // check if key is present
+        if (duplicateMap.find(tempString) != duplicateMap.end()){
+            //Map Already Contains Point
+             //std::cout << "map already contains the point!\n";
+            return true;
+        } else{
+            duplicateMap[tempString] = "";
+            return false;
+        }
+}
 
 //Returns  whether at goal state
 bool atGoal(double robotCenterX, double robotCenterY){
@@ -176,13 +198,16 @@ State* generateSuccessors(State robotState){
     point2D robotCenter = robotState.location;
     
     //Up
-    if (!robotHitsObstacle(robotCenter.x, robotCenter.y + 1)) {
-        
+    if (!hasBeenToSate(robotCenter.x, robotCenter.y + 1) && !robotHitsObstacle(robotCenter.x, robotCenter.y + 1)) {
+   
         State * nextPossibleState = new State();
         nextPossibleState->location = {robotCenter.x, robotCenter.y + 1};
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location );
-        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
+        nextPossibleState->distance = /*distance_(nextPossibleState->location,secondClick)*/ + nextPossibleState->path.size();
+        
+        exploredVector.push_back(nextPossibleState->location);
+        
         nextStateQueue.push(*nextPossibleState);
         if (atGoal(robotCenter.x, robotCenter.y + 1)) {
             return nextPossibleState;
@@ -190,28 +215,36 @@ State* generateSuccessors(State robotState){
         
     }
     //Down
-    if (!robotHitsObstacle(robotCenter.x, robotCenter.y - 1)) {
+    if ( !hasBeenToSate(robotCenter.x, robotCenter.y - 1) && !robotHitsObstacle(robotCenter.x, robotCenter.y - 1)) {
         
         State * nextPossibleState = new State();
         nextPossibleState->location = {robotCenter.x, robotCenter.y - 1};
-        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
+       
         nextPossibleState->path = robotState.path;
-        nextPossibleState->path.push_back(nextPossibleState->location );
-        nextStateQueue.push(*nextPossibleState);
+        nextPossibleState->path.push_back(nextPossibleState->location);
+         nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
         
+        exploredVector.push_back(nextPossibleState->location);
+        
+        nextStateQueue.push(*nextPossibleState);
+
         if (atGoal(robotCenter.x, robotCenter.y - 1)) {
             return nextPossibleState;
         }
     }
     
     //Right
-    if (!robotHitsObstacle(robotCenter.x + 1, robotCenter.y)) {
+    if ( !hasBeenToSate(robotCenter.x + 1, robotCenter.y) && !robotHitsObstacle(robotCenter.x + 1, robotCenter.y)) {
         
         State * nextPossibleState = new State();
         nextPossibleState->location = {robotCenter.x + 1, robotCenter.y};
-        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
+        
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location);
+        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
+        
+        exploredVector.push_back(nextPossibleState->location);
+        
         nextStateQueue.push(*nextPossibleState);
         
         if (atGoal(robotCenter.x + 1, robotCenter.y )) {
@@ -220,13 +253,17 @@ State* generateSuccessors(State robotState){
     }
     
     //Left
-    if (!robotHitsObstacle(robotCenter.x - 1, robotCenter.y)) {
+    if (!hasBeenToSate(robotCenter.x - 1, robotCenter.y ) && !robotHitsObstacle(robotCenter.x - 1, robotCenter.y)) {
         
         State * nextPossibleState = new State();
         nextPossibleState->location = {robotCenter.x - 1, robotCenter.y};
-        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
+        
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location );
+        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
+        
+        exploredVector.push_back(nextPossibleState->location);
+        
         nextStateQueue.push(*nextPossibleState);
         
         if (atGoal(robotCenter.x - 1, robotCenter.y )) {
@@ -240,12 +277,17 @@ State* generateSuccessors(State robotState){
 //Called to find the shortest path around the obstacles. Returns this path.
 vector<point2D>  findShortestPath(){
     
-    //make sure a position is not revisited. use a constant time structure
+    State * nextPossibleState = new State();
+    nextPossibleState->location = firstClick;
+    nextPossibleState->distance = distance_(nextPossibleState->location,secondClick);
+    generateSuccessors(*nextPossibleState);
+    hasBeenToSate(firstClick.x, firstClick.y);
+
     
     State currentState;
     while (!nextStateQueue.empty()) {
         
-       currentState = nextStateQueue.top();
+        currentState = nextStateQueue.top();
         nextStateQueue.pop();
         State *terminal = generateSuccessors(currentState);
         if (terminal != NULL) {
@@ -260,28 +302,15 @@ vector<point2D>  findShortestPath(){
 }
 
 
-void initPathFind(){
-    
-    double startingX = 34;
-    double startingY = 34;
-    
-    State * nextPossibleState = new State();
-    nextPossibleState->location = {startingX, startingY};
-    nextPossibleState->distance = distance_(nextPossibleState->location,secondClick);
-     generateSuccessors(*nextPossibleState);
-}
-
 
 
 /* ****************************** */
 int main(int argc, char** argv) {
     
-initPathFind();
+    //Create Dummy Polygons
     
-  vector<point2D> shortestpath =  findShortestPath();
     
-
-  
+    
     
     /* initialize GLUT  */
     glutInit(&argc, argv);
@@ -294,7 +323,6 @@ initPathFind();
     glutDisplayFunc(display);
     glutKeyboardFunc(keypress);
     glutMouseFunc(mouse);
-    glutMotionFunc(drag);
     
     /* init GL */
     /* set background color black*/
@@ -321,6 +349,23 @@ void drawSegment(segment2D s) {
     glVertex2f(s.start.x, s.start.y);
     glVertex2f(s.end.x, s.end.y);
     glEnd();
+}
+
+// Draw path segment.
+void drawSegmentFromPoints(point2D start, point2D end ) {
+    glBegin(GL_LINES);
+    glVertex2f(start.x, start.y);
+    glVertex2f(end.x, end.y);
+    glEnd();
+}
+
+
+void drawPath(){
+     glColor3fv(cyan);
+    for (int i = 1; i < shortestpath.size(); i++) {
+        drawSegmentFromPoints(shortestpath.at(i - 1),shortestpath.at(i));
+    }
+  
 }
 
 // Generic openGL draw circle method.
@@ -367,15 +412,38 @@ void drawCirclesAroundVertices(void) {
 
 // Draw the shape of the polygon.
 void drawPolygon(void) {
+        glColor3fv(red);
     for (int i = 0; i < polygonSegments.size(); i++) {
         drawSegment(polygonSegments[i]);
     }
 }
 
-// Draw the point of visibility inside the polygon as a filled circle.
-void drawVisbilityPoint(void) {
-    drawCircle(visiblityPoint.x, visiblityPoint.y, RADIUS, NUM_SEGMENTS, 1);
+
+// Draw the start and end points.
+void drawStartEnd(void) {
+    if (startHasBeenSet) {
+                glColor3fv(green);
+        drawCircle(firstClick.x, firstClick.y, RADIUS, NUM_SEGMENTS, 1);
+    }
+    
+    if (startHasBeenSet) {
+                glColor3fv(red);
+        drawCircle(secondClick.x, secondClick.y, RADIUS, NUM_SEGMENTS, 1);
+    }
 }
+
+
+void drawExplored(){
+    for (int i = 0; i < exploredVector.size(); i++) {
+        glColor3fv(yellow);
+        //glBegin(GL_POINT);
+          drawCircle(exploredVector.at(i).x, exploredVector.at(i).y, 3, 20, 1);
+        //glVertex2f(exploredVector.at(i).x, exploredVector.at(i).y);
+        //glEnd();
+    }
+}
+
+
 
 // Draw line segments to the visible verticies.
 void drawVisibleAreaSegments(void) {
@@ -384,14 +452,7 @@ void drawVisibleAreaSegments(void) {
     }
 }
 
-// Fill a triangle with the given coordinates of vertices.
-void fillTraingle(point2D a, point2D b, point2D c) {
-    glBegin(GL_TRIANGLES);
-    glVertex2f(a.x, a.y);  //bottom left vertex
-    glVertex2f(b.x, b.y);  //top vertex
-    glVertex2f(c.x, c.y);  //bottom right vertex
-    glEnd();
-}
+
 
 // Erase the polygon.
 void erase(void) {
@@ -450,13 +511,7 @@ int insidePolygon(point2D p) {
     return 0;
 }
 
-// Compute and store the slopes of the visible area segments.
-void computeSlopes(void) {
-    for (int i = 0; i < visibleAreaSegments.size(); i++) {
-        double m = slope(visibleAreaSegments[i]);
-        visibleAreaSegmentSlopes.push_back(m);
-    }
-}
+
 
 // Compute the point of intersection of the edge closest to visibility point.
 point2D closestEdgePoint(segment2D line, vector<int> edgeIndices) {
@@ -497,100 +552,11 @@ void computeVisibleVertices(void) {
     }
 }
 
-// Extend visiblility lines of certain vertices to the edge of the polygon.
-void extendVisibleVertices(void) {
-    for (int i = 0; i < visibleAreaVertices.size(); i++) {
-        point2D p = visibleAreaVertices[i];
-        
-        // Endpoint of the extension line.
-        point2D offScreenEndPoint;
-        double xDiff = p.x - visiblityPoint.x;
-        
-        if (xDiff > 0) {
-            // Draw extension segment to the right of visibility point.
-            offScreenEndPoint.x = visiblityPoint.x + WINDOWSIZE;
-            offScreenEndPoint.y = WINDOWSIZE * visibleAreaSegmentSlopes[i] + visiblityPoint.y;
-        } else if (xDiff < 0){
-            // Draw extension segment to the left of visibility point.
-            offScreenEndPoint.x = visiblityPoint.x - WINDOWSIZE;
-            offScreenEndPoint.y = -1 * WINDOWSIZE * visibleAreaSegmentSlopes[i] + visiblityPoint.y;
-        } else {
-            // Vertical line.
-            offScreenEndPoint.x = visiblityPoint.x;
-            if (p.y - visiblityPoint.y > 0) {
-                // Draw extension segment above visibility point.
-                offScreenEndPoint.y = WINDOWSIZE;
-            } else {
-                // Draw extension segment below visibility point.
-                offScreenEndPoint.y = 0;
-            }
-        }
-        segment2D extendedLine = {visiblityPoint, offScreenEndPoint};
-        
-        // Cut off the extension so that line remains inside polygon.
-        refineVisibleVerticesExtensions(extendedLine, i);
-    }
-}
 
-// Helper function to extend lines from visible verticies.
-void refineVisibleVerticesExtensions(segment2D extendedLine, int index) {
-    // Check the number of proper intersections between the long extended line and the polygon.
-    int numProperIntersections = 0;
-    vector<int> indicesOfIntersectingEdges;
-    
-    for (int i = 0; i < polygonSegments.size(); i++) {
-        if (intersect_proper(extendedLine, polygonSegments[i])) {
-            numProperIntersections++;
-            indicesOfIntersectingEdges.push_back(i);
-        }
-    }
-    // Extend this segment to the edge if an odd number of proper intersections was found.
-    if (numProperIntersections % 2 == 1) {
-        point2D edgePoint = closestEdgePoint(extendedLine, indicesOfIntersectingEdges);
-        extendedLine.end = edgePoint;
-        // Add to the vertices and segments to be drawn.
-        extendedLineIntersections.push_back(edgePoint);
-        visibleAreaSegments[index] = extendedLine;
-    }
-}
 
-// Connect the recomputed visible verticies.
-void connectExtendedLineIntersections(void) {
-    // Add all the extended lines' endpoints.
-    for (int i = 0; i < extendedLineIntersections.size(); i++) {
-        visibleAreaVertices.push_back(extendedLineIntersections[i]);
-    }
-    
-    // Iterate through the vertices of the visible area of the polygon.
-    for (int i = 0; i < visibleAreaVertices.size() - 1; i++) {
-        for (int j = i + 1; j < visibleAreaVertices.size(); j++) {
-            segment2D line = {visibleAreaVertices[i], visibleAreaVertices[j]};
-            
-            for (int s = 0; s < polygonSegments.size(); s++) {
-                segment2D edge = polygonSegments[s];
-                
-                // If the visibility verticies are along an edge, connect them.
-                if (collinear(edge.start, edge.end, line.start) &&
-                    collinear(edge.start, edge.end, line.end) &&
-                    between(edge.start, edge.end, line.start) &&
-                    between(edge.start, edge.end, line.end)) {
-                    visibleAreaSegments.push_back(line);
-                }
-            }
-        }
-    }
-}
 
-// Call various functions to compute the visible area of the polygon.
-void computeVisibleArea(void) {
-    // Clear previous computation, if any.
-    clearVectors();
-    // New computation.
-    computeVisibleVertices();
-    computeSlopes();
-    extendVisibleVertices();
-    connectExtendedLineIntersections();
-}
+
+
 
 // Clear all stored data; called when visibility point changes.
 void clearVectors(void) {
@@ -611,15 +577,25 @@ void mouse(int button, int state, int Mx, int My) {
         if (hasFinishedPolygon) {
             visiblityPoint = mouseClick;
             
-            if (insidePolygon(visiblityPoint)) {
-                computeVisibleArea();
-                
-                // Store the first click of the visibility point.
-                if (firstClick.x == 0 && firstClick.y == 0) {
-                    firstClick = visiblityPoint;
+            if (!insidePolygon(visiblityPoint)) {
+               
+                // Store the second click as the end point point.
+                if ( startHasBeenSet && secondClick.x == 0 && secondClick.y == 0 ) {
+                    secondClick.x = visiblityPoint.x;
+                    secondClick.y = visiblityPoint.y;
                 }
+                
+                // Store the first click as the starting point.
+                if (firstClick.x == 0 && firstClick.y == 0) {
+                    firstClick.x = visiblityPoint.x;
+                    firstClick.y = visiblityPoint.y;
+                    startHasBeenSet = true;
+                }
+                
+             
+                
             } else {
-                printf("Please click inside the polygon.");
+                printf("Please click outside the polygons.");
             }
             // User is currently drawing polygon.
         } else {
@@ -656,127 +632,40 @@ void mouse(int button, int state, int Mx, int My) {
     }
 }
 
-// Responds to mouse drag (of the visibility point).
-void drag(int x, int y) {
-    if (hasFinishedPolygon && insidePolygon(visiblityPoint)) {
-        // Update visibility point.
-        visiblityPoint = {(double)x, (double)(WINDOWSIZE - y)};
-        // Re-compute.
-        computeVisibleArea();
-        // Update display.
-        glutPostRedisplay();
-    }
-}
 
-// Move the visibility point in the desired direction.
-// Return 1 if the direction is valid (new point inside polygon)
-// Return 0 if the point hits a wall.
-int move(Direction d, double offset) {
-    point2D p;
-    switch (d) {
-        case UP:
-            p = {visiblityPoint.x, visiblityPoint.y + offset};
-            break;
-        case DOWN:
-            p = {visiblityPoint.x, visiblityPoint.y - offset};
-            break;
-        case LEFT:
-            p = {visiblityPoint.x - offset, visiblityPoint.y};
-            break;
-        case RIGHT:
-            p = {visiblityPoint.x + offset, visiblityPoint.y};
-            break;
-        default:
-            break;
-    }
-    
-    int isInside = 0;
-    // Move the visibility point and compute area.
-    if (!hitWall(p, d, RADIUS)) {
-        visiblityPoint = p;
-        isInside = 1;
-        computeVisibleArea();
-        display();
-    }
-    return isInside;
-}
 
-// Check if there is room to move.
-int canMove(Direction d) {
-    return move(d, OFFSET);
-}
-
-// Whether the point has hit a wall.
-int hitWall(point2D p, Direction d, double radius) {
-    segment2D s;
-    point2D start, end;
-    if (d == LEFT || d == RIGHT) {
-        start = {p.x - radius, p.y};
-        end = {p.x + radius, p.y};
-    } else {
-        start = {p.x, p.y + radius};
-        end = {p.x, p.y - radius};
-    }
-    s = {start, end};
-    
-    for (int i = 0; i < polygonSegments.size(); i++) {
-        if (intersect(s, polygonSegments[i])) {
-            return 1;
-        }
-    }
-    return 0;
-}
 
 // Automatically move the visibility point.
 void startMoving(void) {
     static int lastFrameTime = 0;
     int now, elapsed_ms;
-    Direction dir = LEFT;
+
     int hit_x = 0, hit_y = 0;
     
+    int i = 0;
     while (1) {
+        //Only animate until it reaches the goal state
+        if (i >= shortestpath.size()) {
+            break;
+        }
+        
         now = glutGet (GLUT_ELAPSED_TIME);
         elapsed_ms = now - lastFrameTime;
         
         // Move visibility point every time interval.
         if (elapsed_ms  > 1) {
-            // Double check if the point is inside the polygon.
-            if (!insidePolygon(visiblityPoint)) {
-                // If not, reset point to default position.
-                visiblityPoint = firstClick;
-                hit_x = 0;
-                hit_y = 0;
-                
-                printf("HERE");
-            }
             
-            // If hitting the wall horizontally, move it vertically, and vice versa.
-            if (hit_x) {
-                // Check if there is room to move up.
-                dir = canMove(DOWN) ? DOWN : UP;
-                hit_x = 0;
-                hit_y = 0;
-            } else if (hit_y) {
-                // Check if there is room to move left.
-                dir = canMove(LEFT) ? LEFT : RIGHT;
-                hit_y = 0;
-                hit_y = 0;
-            }
-            
-            // Has hit a wall.
-            if (!move(dir, OFFSET)) {
-                if (dir == LEFT || dir == RIGHT) {
-                    hit_x = 1; // Hit a wall horizontally.
-                    hit_y = 0;
-                } else {
-                    hit_x = 0;
-                    hit_y = 1; // Hit a wall vertically.
-                }
-            }
+            visiblityPoint.x = shortestpath.at(i).x;
+            visiblityPoint.y = shortestpath.at(i).y;
             lastFrameTime = now;
         }
+        
+       
     }
 }
+
+
+
 
 /* ****************************** */
 void display(void) {
@@ -792,8 +681,12 @@ void display(void) {
     
     /* Draw the polygon and its visible area. */
     // Draw polygon.
-    glColor3fv(red);
+
     drawPolygon();
+    drawStartEnd();
+    drawPath();
+    //drawExplored();//Debug
+    
     
     if (!hasFinishedPolygon) {
         drawCirclesAroundVertices();
@@ -803,14 +696,9 @@ void display(void) {
         glColor3fv(green);
         drawVisibleAreaSegments();
         
-        // Fill visible area.
-        for (int i = 0; i < visibleAreaSegments.size(); i++) {
-            segment2D s = visibleAreaSegments[i];
-            fillTraingle(s.start, s.end, visiblityPoint);
-        }
+        
         // Draw visibility point as a filled circle.
         glColor3fv(yellow);
-        drawVisbilityPoint();
     }
     
     /* execute the drawing commands */
@@ -828,9 +716,10 @@ void keypress(unsigned char key, int x, int y) {
             // Erases the polygon.
             erase();
             break;
-        case 's':
-            // Clears the visibility area.
-            clearVectors();
+        case 'd':
+             polygons.push_back(polygonSegments);//DEBUG
+            shortestpath =  findShortestPath();
+            
             glutPostRedisplay();
             break;
         case 'm':

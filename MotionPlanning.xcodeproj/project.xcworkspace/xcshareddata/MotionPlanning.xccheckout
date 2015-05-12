@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>3B893A15-27B7-4FA9-90A5-DEA8233ADE1A</string>
+	<key>IDESourceControlProjectName</key>
+	<string>MotionPlanning</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>DE153B73529E7BEFCE131BA2A397C835D5C5BAFC</key>
+		<string>https://github.com/zleman1593/A-Motion-Planning-Robot.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>MotionPlanning.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>DE153B73529E7BEFCE131BA2A397C835D5C5BAFC</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/zleman1593/A-Motion-Planning-Robot.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>DE153B73529E7BEFCE131BA2A397C835D5C5BAFC</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>DE153B73529E7BEFCE131BA2A397C835D5C5BAFC</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Motion%20Planning</string>
+		</dict>
+	</array>
+</dict>
+</plist>
