@@ -31,17 +31,15 @@ PROGS = viewPoints
 
 default: $(PROGS)
 
-viewPoints: viewPoints.o geom.o rtimer.o
-	$(CC) -o $@ viewPoints.o geom.o rtimer.o $(LDFLAGS)
+viewPoints: viewPoints.o geom.o
+	$(CC) -o $@ viewPoints.o geom.o $(LDFLAGS)
 
-viewPoints.o: viewPoints.cpp  geom.h rtimer.h
+viewPoints.o: viewPoints.cpp  geom.h
 	$(CC) -c $(INCLUDEPATH)  viewPoints.cpp  -o $@
 
 geom.o: geom.cpp geom.h
 	$(CC) -c $(INCLUDEPATH)  geom.cpp -o $@
 
-rtimer.o: rtimer.h rtimer.cpp
-	$(CC) -c $(INCLUDEPATH) rtimer.cpp -o $@
 clean::	
 	rm *.o
 	rm viewPoints

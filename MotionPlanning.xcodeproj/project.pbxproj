@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		A267D8521AF056BF0025EBD7 /* geom.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A267D84B1AF056BF0025EBD7 /* geom.cpp */; };
-		A267D8531AF056BF0025EBD7 /* rtimer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A267D84F1AF056BF0025EBD7 /* rtimer.cpp */; };
 		A267D8541AF056BF0025EBD7 /* viewPoints.cpp in Sources */ = {isa = PBXBuildFile; fileRef = A267D8511AF056BF0025EBD7 /* viewPoints.cpp */; };
 		A267D8561AF057230025EBD7 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A267D8551AF057230025EBD7 /* GLUT.framework */; };
 		A267D8581AF057290025EBD7 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A267D8571AF057290025EBD7 /* OpenGL.framework */; };
@@ -32,8 +31,6 @@
 		A267D84C1AF056BF0025EBD7 /* geom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = geom.h; sourceTree = "<group>"; };
 		A267D84D1AF056BF0025EBD7 /* Makefile.make */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Makefile.make; sourceTree = "<group>"; };
 		A267D84E1AF056BF0025EBD7 /* readme.readme */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = readme.readme; sourceTree = "<group>"; };
-		A267D84F1AF056BF0025EBD7 /* rtimer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = rtimer.cpp; sourceTree = "<group>"; };
-		A267D8501AF056BF0025EBD7 /* rtimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = rtimer.h; sourceTree = "<group>"; };
 		A267D8511AF056BF0025EBD7 /* viewPoints.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = viewPoints.cpp; sourceTree = "<group>"; };
 		A267D8551AF057230025EBD7 /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		A267D8571AF057290025EBD7 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
@@ -77,8 +74,6 @@
 				A267D84C1AF056BF0025EBD7 /* geom.h */,
 				A267D84D1AF056BF0025EBD7 /* Makefile.make */,
 				A267D84E1AF056BF0025EBD7 /* readme.readme */,
-				A267D84F1AF056BF0025EBD7 /* rtimer.cpp */,
-				A267D8501AF056BF0025EBD7 /* rtimer.h */,
 				A267D8511AF056BF0025EBD7 /* viewPoints.cpp */,
 			);
 			name = "Motion Planning";
@@ -141,7 +136,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A267D8531AF056BF0025EBD7 /* rtimer.cpp in Sources */,
 				A267D8521AF056BF0025EBD7 /* geom.cpp in Sources */,
 				A267D8541AF056BF0025EBD7 /* viewPoints.cpp in Sources */,
 			);

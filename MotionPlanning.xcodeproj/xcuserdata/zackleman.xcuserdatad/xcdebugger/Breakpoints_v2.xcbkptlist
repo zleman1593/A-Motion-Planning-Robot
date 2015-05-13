@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "332"
-            endingLineNumber = "332">
+            startingLineNumber = "333"
+            endingLineNumber = "333">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -40,11 +40,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "372"
-            endingLineNumber = "372"
+            startingLineNumber = "369"
+            endingLineNumber = "369"
             landmarkName = "main(int argc, char** argv)"
             landmarkType = "7">
          </BreakpointContent>
@@ -56,11 +56,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "343"
-            endingLineNumber = "343"
+            startingLineNumber = "344"
+            endingLineNumber = "344"
             landmarkName = "findShortestPath()"
             landmarkType = "7">
          </BreakpointContent>
@@ -72,11 +72,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "276"
-            endingLineNumber = "276"
+            startingLineNumber = "277"
+            endingLineNumber = "277"
             landmarkName = "generateSuccessors(State currentRobotState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -88,11 +88,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "346"
-            endingLineNumber = "346"
+            startingLineNumber = "347"
+            endingLineNumber = "347"
             landmarkName = "findShortestPath()"
             landmarkType = "7">
          </BreakpointContent>
@@ -104,11 +104,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "356"
-            endingLineNumber = "356"
+            startingLineNumber = "358"
+            endingLineNumber = "358"
             landmarkName = "findShortestPath()"
             landmarkType = "7">
          </BreakpointContent>
@@ -120,11 +120,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "268"
-            endingLineNumber = "268"
+            startingLineNumber = "269"
+            endingLineNumber = "269"
             landmarkName = "generateSuccessors(State currentRobotState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -136,11 +136,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "280"
-            endingLineNumber = "280"
+            startingLineNumber = "281"
+            endingLineNumber = "281"
             landmarkName = "generateSuccessors(State currentRobotState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -152,7 +152,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "192"
@@ -168,7 +168,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "208"
@@ -184,11 +184,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "175"
-            endingLineNumber = "175"
+            startingLineNumber = "174"
+            endingLineNumber = "174"
             landmarkName = "outOfBounds(point2D pointToCheck)"
             landmarkType = "7">
          </BreakpointContent>
@@ -200,23 +200,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "178"
-            endingLineNumber = "178"
-            landmarkName = "outOfBounds(point2D pointToCheck)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "177"
@@ -232,11 +216,27 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "350"
-            endingLineNumber = "350"
+            startingLineNumber = "176"
+            endingLineNumber = "176"
+            landmarkName = "outOfBounds(point2D pointToCheck)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PolygonVisibility/viewPoints.cpp"
+            timestampString = "453225253.147172"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "352"
+            endingLineNumber = "352"
             landmarkName = "findShortestPath()"
             landmarkType = "7">
          </BreakpointContent>
@@ -248,11 +248,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "651"
-            endingLineNumber = "651"
+            startingLineNumber = "628"
+            endingLineNumber = "628"
             landmarkName = "startMoving(void)"
             landmarkType = "7">
          </BreakpointContent>
@@ -264,11 +264,27 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "601"
-            endingLineNumber = "601"
+            startingLineNumber = "572"
+            endingLineNumber = "572"
+            landmarkName = "mouse(int button, int state, int Mx, int My)"
+            landmarkType = "7">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "PolygonVisibility/viewPoints.cpp"
+            timestampString = "453225253.147172"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "618"
+            endingLineNumber = "618"
             landmarkName = "mouse(int button, int state, int Mx, int My)"
             landmarkType = "7">
          </BreakpointContent>
@@ -280,11 +296,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "641"
-            endingLineNumber = "641"
+            startingLineNumber = "574"
+            endingLineNumber = "574"
             landmarkName = "mouse(int button, int state, int Mx, int My)"
             landmarkType = "7">
          </BreakpointContent>
@@ -296,23 +312,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "603"
-            endingLineNumber = "603"
-            landmarkName = "mouse(int button, int state, int Mx, int My)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "185"
@@ -328,11 +328,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "342"
-            endingLineNumber = "342"
+            startingLineNumber = "343"
+            endingLineNumber = "343"
             landmarkName = "findShortestPath()"
             landmarkType = "7">
          </BreakpointContent>
@@ -344,11 +344,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "697"
-            endingLineNumber = "697"
+            startingLineNumber = "674"
+            endingLineNumber = "674"
             landmarkName = "display(void)"
             landmarkType = "7">
          </BreakpointContent>
@@ -360,11 +360,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "487"
-            endingLineNumber = "487"
+            startingLineNumber = "491"
+            endingLineNumber = "491"
             landmarkName = "drawStartEnd(void)"
             landmarkType = "7">
          </BreakpointContent>
@@ -376,11 +376,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "728"
-            endingLineNumber = "728"
+            startingLineNumber = "705"
+            endingLineNumber = "705"
             landmarkName = "keypress(unsigned char key, int x, int y)"
             landmarkType = "7">
          </BreakpointContent>
@@ -392,11 +392,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453148455.196066"
+            timestampString = "453223154.618297"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "147"
-            endingLineNumber = "147"
+            startingLineNumber = "148"
+            endingLineNumber = "148"
             landmarkName = "hasBeenToSate(double x, double y)"
             landmarkType = "7">
          </BreakpointContent>
@@ -408,11 +408,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "329"
-            endingLineNumber = "329"
+            startingLineNumber = "330"
+            endingLineNumber = "330"
             landmarkName = "generateSuccessors(State currentRobotState)"
             landmarkType = "7">
          </BreakpointContent>
@@ -424,11 +424,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453155989.693346"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "669"
-            endingLineNumber = "669"
+            startingLineNumber = "646"
+            endingLineNumber = "646"
             landmarkName = "startMoving(void)"
             landmarkType = "7">
          </BreakpointContent>
@@ -440,7 +440,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "PolygonVisibility/viewPoints.cpp"
-            timestampString = "453218651.588835"
+            timestampString = "453225253.147172"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "251"

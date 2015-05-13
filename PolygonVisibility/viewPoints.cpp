@@ -2,7 +2,7 @@
  
  Laura Toma, Ivy Xing, Zackery Leman
  
- What it does:
+ What it does: See readme. 
  
  
  
@@ -14,7 +14,6 @@
 #include <queue>
 #include <vector>
 #include "geom.h"
-#include "rtimer.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
@@ -60,6 +59,9 @@ void drawCircle(float cx, float cy, float r, int num_segments);
 void drawCirclesAroundVertices(void);
 void drawSegment(segment2D s);
 void drawPolygon(void);
+void drawPolygons(void);
+void drawPolygonInProgress(void);
+
 
 /* Helper computation functions */
 int intersectPolygon(segment2D current);
@@ -77,27 +79,29 @@ vector<point2D>  findShortestPath();
 
 
 /**** Global variables ****/
-int hasFinishedPolygon = 0; // Whether the user has finished drawing the polygon.
+int hasFinishedPolygon = 0; // Whether the user has finished drawing the current polygon.
+bool hasFinishedPolygons = false; // Whether the user has finished drawing the polygons.
 point2D clickPoint; // The point of a click
 point2D robotStartPos = {0, 0};
 point2D robotEndPos = {0, 0};
 point2D robotPosition;
-bool startHasBeenSet = false;
+bool startHasBeenSet = false; //Have selected robot start point
 int constant = ROBOT_SIZE;
 //Tracks what states have already been visited
 std::map<std::string, std::string> exploredMap;
 
 
 
-vector<vector<segment2D>>  polygons; //--------------------------------
-// The array of segments that form a polygon.
-vector<segment2D>  polygonSegments; //--------------------------------
-// The vertices of the polygon.
-vector<point2D> polygonVertices; //--------------------------------
+vector<vector<segment2D> >  polygons;
+// The array of segments that form the polygon currently being drawn.
+vector<segment2D>  polygonSegments;
+// The vertices of the current polygon being drawn.
+vector<point2D> polygonVertices;
 
 //The Shortest path that the robot will travel on
 vector<point2D> shortestpath;
-//Priority queue comparison function
+
+//Priority queue comparison function that uses the cost incurred by traveling on the current path and the heuristic euclidean distance from the position to the goal state.
 class CompareStateDistance {
 public:
     bool operator()(State& t1, State& t2)
@@ -113,13 +117,10 @@ priority_queue<State,vector<State>,CompareStateDistance> nextStateQueue;
 //Can track states that have been explored. Used only for debugging  when you wan to visualize search space
 vector<point2D>  exploredVector;
 
-
-
-
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
 void drawRobot(double robotCenterX, double robotCenterY){
     
-    
+     //Generate four corners
     point2D bottomRight = {robotCenterX + constant, robotCenterY - constant};
     point2D bottomLeft =  {robotCenterX - constant, robotCenterY - constant};
     point2D topLeft =  {robotCenterX - constant, robotCenterY + constant};
@@ -139,7 +140,7 @@ void drawRobot(double robotCenterX, double robotCenterY){
     
 }
 
-/*Method to prevent locations from being revisited. Done in linear time with hashmap*/
+/*Method to prevent locations from being revisited. Done in constant time with hashmap*/
 bool hasBeenToSate(double x, double y) {
     
     std::ostringstream oss;
@@ -162,7 +163,6 @@ bool atGoal(double robotCenterX, double robotCenterY){
     if (doubleEqual(robotCenterX,robotEndPos.x) && doubleEqual(robotCenterY,robotEndPos.y)) {
         return true;
     }
-    
     return false;
 }
 
@@ -233,7 +233,6 @@ State* getState(double robotCenterX, double  robotCenterY,State robotState){
         if (atGoal(robotCenterX, robotCenterY)) {
             return nextPossibleState;
         }
-        
     }
     return NULL;
 }
@@ -459,13 +458,27 @@ void drawCirclesAroundVertices(void) {
 }
 
 // Draw the shape of the polygon.
-void drawPolygon(void) {
+void drawPolygon(vector<segment2D> segments) {
+    glColor3fv(red);
+    for (int i = 0; i < segments.size(); i++) {
+        drawSegment(segments[i]);
+    }
+}
+
+// Draw all polygons.
+void drawPolygons(void) {
+    for (int i = 0; i < polygons.size(); i++) {
+        drawPolygon(polygons[i]);
+    }
+}
+
+// Draw the shape of the polygon.
+void drawPolygonInProgress(void) {
     glColor3fv(red);
     for (int i = 0; i < polygonSegments.size(); i++) {
         drawSegment(polygonSegments[i]);
     }
 }
-
 
 // Draw the start and end points.
 void drawStartEnd(void) {
@@ -541,7 +554,7 @@ void mouse(int button, int state, int Mx, int My) {
         point2D mouseClick = {(double)Mx, (double)(WINDOWSIZE - My)};
         
         // User finished drawing polygon, so compute visibility area.
-        if (hasFinishedPolygon) {
+        if (hasFinishedPolygons) {
             clickPoint = mouseClick;
             
             if (!insidePolygon(clickPoint)) {
@@ -583,6 +596,13 @@ void mouse(int button, int state, int Mx, int My) {
                     if (!hasFinishedPolygon) {
                         // Add new vertex.
                         polygonVertices.push_back(mouseClick);
+                    } else{
+                        printf("Push the polygon into vector of polygons.");
+                        vector<segment2D> thisPolygon = polygonSegments;
+                        polygons.push_back(thisPolygon);
+                        polygonSegments.clear();
+                        polygonVertices.clear();
+                        hasFinishedPolygon = false;
                     }
                 } else {
                     printf("Polygon cannot intersect itself.");
@@ -645,10 +665,10 @@ void display(void) {
     glScalef(2.0/WINDOWSIZE, 2.0/WINDOWSIZE, 1.0);
     glTranslatef(-WINDOWSIZE/2, -WINDOWSIZE/2, 0);
     
-    /* Draw the polygon and its visible area. */
-    // Draw polygon.
-    
-    drawPolygon();
+
+    // Draw polygons.
+    drawPolygons();
+    drawPolygonInProgress();
     drawStartEnd();
     drawPath();
     //drawExplored();//Debug
@@ -669,8 +689,12 @@ void keypress(unsigned char key, int x, int y) {
             // Exits the program.
             exit(0);
             break;
+        case 'e':
+            // Exits obstacle drawing mode.
+            hasFinishedPolygons = true;
+            break;
         case 'd':
-            polygons.push_back(polygonSegments);//DEBUG
+            //Draws shortest path
             shortestpath =  findShortestPath();
             glutPostRedisplay();
             break;
