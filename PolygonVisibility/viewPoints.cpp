@@ -1,12 +1,11 @@
-/* view.c
+/* view.cpp
  
  Laura Toma, Ivy Xing, Zackery Leman
  
- What it does: See readme. 
- 
- 
- 
+ What it does: See readme.
+
  */
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -136,6 +135,7 @@ void drawRobot(double robotCenterX, double robotCenterY){
     drawSegment(rightVert);
     drawSegment(top);
     drawSegment(bottom);
+
     
     
 }
