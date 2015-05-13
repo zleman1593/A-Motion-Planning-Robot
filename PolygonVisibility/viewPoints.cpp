@@ -5,6 +5,7 @@
  What it does:
  
  
+ 
  */
 #include <iostream>
 #include <map>
@@ -27,7 +28,9 @@
 using namespace std;
 
 
-int ROBOT_SIZE = 5;
+const int ROBOT_SIZE = 5;
+const int WINDOWSIZE = 500;
+const int NUM_SEGMENTS = 800; // Number of segments that form the circle.
 
 GLfloat red[3] = {1.0, 0.0, 0.0};
 GLfloat green[3] = {0.0, 1.0, 0.0};
@@ -52,70 +55,65 @@ void mouse(int button, int state, int Mx, int My);
 void startMoving(void);
 
 
-
-
 /* Drawing functions */
 void drawCircle(float cx, float cy, float r, int num_segments);
 void drawCirclesAroundVertices(void);
 void drawSegment(segment2D s);
 void drawPolygon(void);
-void erase(void);
 
 /* Helper computation functions */
 int intersectPolygon(segment2D current);
 int insidePolygon(point2D p);
-void clearVectors(void);
+void drawRobot(double robotCenterX, double robotCenterY);
+bool hasBeenToSate(double x, double y);
+bool atGoal(double robotCenterX, double robotCenterY);
+bool outOfBounds(point2D pointToCheck);
+bool robotHitsObstacle(double robotCenterX, double robotCenterY);
+State* getState(double robotCenterX, double  robotCenterY,State robotState);
+State* getDiagState(double robotCenterX, double  robotCenterY,State robotState);
+State* generateSuccessors(State currentRobotState);
+vector<point2D>  findShortestPath();
 
 
 
 /**** Global variables ****/
 int hasFinishedPolygon = 0; // Whether the user has finished drawing the polygon.
-point2D visiblityPoint; // The point of visibility inside the polygon.
-point2D firstClick = {0, 0};
-point2D secondClick = {0, 0};
+point2D clickPoint; // The point of a click
+point2D robotStartPos = {0, 0};
+point2D robotEndPos = {0, 0};
 point2D robotPosition;
 bool startHasBeenSet = false;
-
 int constant = ROBOT_SIZE;
-
-std::map<std::string, std::string> duplicateMap;
-
-const int WINDOWSIZE = 500;
-const int NUM_SEGMENTS = 800; // Number of segments that form the circle.
+//Tracks what states have already been visited
+std::map<std::string, std::string> exploredMap;
 
 
+
+vector<vector<segment2D>>  polygons; //--------------------------------
+// The array of segments that form a polygon.
+vector<segment2D>  polygonSegments; //--------------------------------
+// The vertices of the polygon.
+vector<point2D> polygonVertices; //--------------------------------
+
+//The Shortest path that the robot will travel on
+vector<point2D> shortestpath;
 //Priority queue comparison function
 class CompareStateDistance {
 public:
     bool operator()(State& t1, State& t2)
     {
-        if (t1.distance > t2.distance) return true;
+        if (t1.distance + t1.cost > t2.distance + t2.cost ) return true;
         return false;
     }
 };
 
-//NOTE: all the structures below need to be global so that they can be rendered
-
-// The array of segments that form the polygon.
-vector<vector<segment2D>>  polygons;
-vector<segment2D>  polygonSegments;
+//Priority queue for the frontier states
 priority_queue<State,vector<State>,CompareStateDistance> nextStateQueue;
 
-
+//Can track states that have been explored. Used only for debugging  when you wan to visualize search space
 vector<point2D>  exploredVector;
 
-// The vertices of the polygon.
-vector<point2D> polygonVertices;
-// The array of segments that form the visible area of the polygon.
-vector<segment2D>  visibleAreaSegments;
-// The slope of the visible area segments.
-vector<double>visibleAreaSegmentSlopes;
-// The vertices of the polygon that are visible from the visibility point.
-vector<point2D> visibleAreaVertices;
-// The intersection points of the extended lines with the egdes of the polygon.
-vector<point2D> extendedLineIntersections;
 
-vector<point2D> shortestpath;
 
 
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
@@ -126,7 +124,7 @@ void drawRobot(double robotCenterX, double robotCenterY){
     point2D bottomLeft =  {robotCenterX - constant, robotCenterY - constant};
     point2D topLeft =  {robotCenterX - constant, robotCenterY + constant};
     point2D topRight =  {robotCenterX + constant, robotCenterY + constant};
-  
+    
     segment2D leftVert = {topLeft,bottomLeft};
     segment2D rightVert =  {topRight,bottomRight};
     segment2D top =  {topLeft,topRight};
@@ -149,20 +147,19 @@ bool hasBeenToSate(double x, double y) {
     std::string tempString = oss.str();
     
     // check if key is present
-    if (duplicateMap.find(tempString) != duplicateMap.end()){
+    if (exploredMap.find(tempString) != exploredMap.end()){
         //Map Already Contains Point
-        //std::cout << "map already contains the point!\n";
         return true;
     } else{
-        duplicateMap[tempString] = "";
+        exploredMap[tempString] = "";
         return false;
     }
 }
 
-//Returns  whether at goal state
+//Returns whether at goal state
 bool atGoal(double robotCenterX, double robotCenterY){
     
-    if (doubleEqual(robotCenterX,secondClick.x) && doubleEqual(robotCenterY,secondClick.y)) {
+    if (doubleEqual(robotCenterX,robotEndPos.x) && doubleEqual(robotCenterY,robotEndPos.y)) {
         return true;
     }
     
@@ -182,6 +179,7 @@ bool outOfBounds(point2D pointToCheck){
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
 bool robotHitsObstacle(double robotCenterX, double robotCenterY){
     
+    //Generate four corners
     point2D bottomRight = {robotCenterX + constant, robotCenterY - constant};
     point2D bottomLeft =  {robotCenterX - constant, robotCenterY - constant};
     point2D topLeft =  {robotCenterX - constant, robotCenterY + constant};
@@ -192,13 +190,13 @@ bool robotHitsObstacle(double robotCenterX, double robotCenterY){
         return true;
     }
     
-    
+    //Generate for sides from corners
     segment2D leftVert = {topLeft,bottomLeft};
     segment2D rightVert =  {topRight,bottomRight};
     segment2D top =  {topLeft,topRight};
     segment2D bottom =  {bottomLeft,bottomRight};
     
-    
+    //Test for intersections
     for (int i = 0; i < polygons.size(); i++) {
         
         vector<segment2D> polygonSegments = polygons.at(i);
@@ -217,6 +215,7 @@ bool robotHitsObstacle(double robotCenterX, double robotCenterY){
     return false;
 }
 
+//Return the state at this new position given past state history
 State* getState(double robotCenterX, double  robotCenterY,State robotState){
     
     
@@ -226,8 +225,8 @@ State* getState(double robotCenterX, double  robotCenterY,State robotState){
         nextPossibleState->location = {robotCenterX, robotCenterY};
         nextPossibleState->path = robotState.path;
         nextPossibleState->path.push_back(nextPossibleState->location );
-        nextPossibleState->distance = distance_(nextPossibleState->location,secondClick) + nextPossibleState->path.size();
-        
+        nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+        nextPossibleState->cost = robotState.cost + 1;
         exploredVector.push_back(nextPossibleState->location);
         
         nextStateQueue.push(*nextPossibleState);
@@ -238,6 +237,30 @@ State* getState(double robotCenterX, double  robotCenterY,State robotState){
     }
     return NULL;
 }
+
+//Return the state at this new position given past state history. For diagonals
+State* getDiagState(double robotCenterX, double  robotCenterY,State robotState){
+    
+    
+    if (!hasBeenToSate(robotCenterX, robotCenterY) && !robotHitsObstacle(robotCenterX, robotCenterY)) {
+        
+        State * nextPossibleState = new State();
+        nextPossibleState->location = {robotCenterX, robotCenterY};
+        nextPossibleState->path = robotState.path;
+        nextPossibleState->path.push_back(nextPossibleState->location );
+        nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+        nextPossibleState->cost = robotState.cost + sqrt(2.0);
+        exploredVector.push_back(nextPossibleState->location);
+        
+        nextStateQueue.push(*nextPossibleState);
+        if (atGoal(robotCenterX, robotCenterY)) {
+            return nextPossibleState;
+        }
+        
+    }
+    return NULL;
+}
+
 
 //Adds all viable sucessor states to current state to the priority queue
 State* generateSuccessors(State currentRobotState){
@@ -273,34 +296,34 @@ State* generateSuccessors(State currentRobotState){
     
     
     
-    //Up Right
-    state = getState(robotCenter.x + 1, robotCenter.y + 1,currentRobotState);
-    
-    if ( state != NULL) {
-        return state;
-    }
-    
-    //Down Right
-    state = getState(robotCenter.x + 1, robotCenter.y - 1,currentRobotState);
-    
-    if ( state != NULL) {
-        return state;
-    }
-    
-    // Up Left
-    state = getState(robotCenter.x + 1, robotCenter.y - 1,currentRobotState);
-    if ( state != NULL) {
-        return state;
-    }
-    
-    // Down Left
-    
-    state = getState(robotCenter.x - 1, robotCenter.y - 1,currentRobotState);
-    if ( state != NULL) {
-        return state;
-    }
-    
-    
+    //    //Up Right
+    //    state = getDiagState(robotCenter.x + 1, robotCenter.y + 1,currentRobotState);
+    //
+    //    if ( state != NULL) {
+    //        return state;
+    //    }
+    //
+    //    //Down Right
+    //    state = getDiagState(robotCenter.x + 1, robotCenter.y - 1,currentRobotState);
+    //
+    //    if ( state != NULL) {
+    //        return state;
+    //    }
+    //
+    //    // Up Left
+    //    state = getDiagState(robotCenter.x - 1, robotCenter.y + 1,currentRobotState);
+    //    if ( state != NULL) {
+    //        return state;
+    //    }
+    //
+    //    // Down Left
+    //
+    //    state = getDiagState(robotCenter.x - 1, robotCenter.y - 1,currentRobotState);
+    //    if ( state != NULL) {
+    //        return state;
+    //    }
+    //
+    //
     
     
     return NULL;
@@ -311,10 +334,10 @@ State* generateSuccessors(State currentRobotState){
 vector<point2D>  findShortestPath(){
     
     State * nextPossibleState = new State();
-    nextPossibleState->location = firstClick;
-    nextPossibleState->distance = distance_(nextPossibleState->location,secondClick);
+    nextPossibleState->location = robotStartPos;
+    nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
     generateSuccessors(*nextPossibleState);
-    hasBeenToSate(firstClick.x, firstClick.y);
+    hasBeenToSate(robotStartPos.x, robotStartPos.y);
     
     
     State currentState;
@@ -324,11 +347,12 @@ vector<point2D>  findShortestPath(){
         nextStateQueue.pop();
         State *terminal = generateSuccessors(currentState);
         if (terminal != NULL) {
+            //Returns the shortest path
             return terminal->path;
         }
         
     }
-    
+    //Returns if there is no solution
     vector<point2D>  empty;
     return empty;
     
@@ -336,13 +360,8 @@ vector<point2D>  findShortestPath(){
 
 
 
-
 /* ****************************** */
 int main(int argc, char** argv) {
-    
-    //Create Dummy Polygons
-    
-    
     
     
     /* initialize GLUT  */
@@ -366,15 +385,11 @@ int main(int argc, char** argv) {
     /* give control to event handler */
     glutMainLoop();
     
-    
-    
-    
-    
-    
     return 0;
 }
 
 /**** Drawing functions ****/
+
 
 // Draw a line segment.
 void drawSegment(segment2D s) {
@@ -392,7 +407,7 @@ void drawSegmentFromPoints(point2D start, point2D end ) {
     glEnd();
 }
 
-
+//Draes path o robot
 void drawPath(){
     glColor3fv(cyan);
     for (int i = 1; i < shortestpath.size(); i++) {
@@ -456,16 +471,13 @@ void drawPolygon(void) {
 void drawStartEnd(void) {
     if (startHasBeenSet) {
         glColor3fv(green);
-        drawCircle(firstClick.x, firstClick.y, RADIUS, NUM_SEGMENTS, 1);
-    }
-    
-    if (startHasBeenSet) {
+        drawCircle(robotStartPos.x, robotStartPos.y, RADIUS, NUM_SEGMENTS, 1);
         glColor3fv(red);
-        drawCircle(secondClick.x, secondClick.y, RADIUS, NUM_SEGMENTS, 1);
+        drawCircle(robotEndPos.x, robotEndPos.y, RADIUS, NUM_SEGMENTS, 1);
     }
 }
 
-
+//Draws the area that has been explored
 void drawExplored(){
     for (int i = 0; i < exploredVector.size(); i++) {
         glColor3fv(yellow);
@@ -476,30 +488,6 @@ void drawExplored(){
     }
 }
 
-
-
-// Draw line segments to the visible verticies.
-void drawVisibleAreaSegments(void) {
-    for (int i = 0; i < visibleAreaSegments.size(); i++) {
-        drawSegment(visibleAreaSegments[i]);
-    }
-}
-
-
-
-// Erase the polygon.
-void erase(void) {
-    polygonSegments.clear();
-    polygonVertices.clear();
-    visiblityPoint = {-1, -1};
-    
-    // Clear computations.
-    clearVectors();
-    // Allow user to draw a new polygon.
-    hasFinishedPolygon = 0;
-    // Update dispplay.
-    glutPostRedisplay();
-}
 
 /**** Computation Functions ****/
 
@@ -545,15 +533,6 @@ int insidePolygon(point2D p) {
 }
 
 
-
-// Clear all stored data; called when visibility point changes.
-void clearVectors(void) {
-    visibleAreaVertices.clear();
-    visibleAreaSegments.clear();
-    visibleAreaSegmentSlopes.clear();
-    extendedLineIntersections.clear();
-}
-
 /**** Responsive and Display Functions ****/
 
 // Respond to mouse clicks.
@@ -563,23 +542,22 @@ void mouse(int button, int state, int Mx, int My) {
         
         // User finished drawing polygon, so compute visibility area.
         if (hasFinishedPolygon) {
-            visiblityPoint = mouseClick;
+            clickPoint = mouseClick;
             
-            if (!insidePolygon(visiblityPoint)) {
+            if (!insidePolygon(clickPoint)) {
                 
                 // Store the second click as the end point point.
-                if ( startHasBeenSet && secondClick.x == 0 && secondClick.y == 0 ) {
-                    secondClick.x = visiblityPoint.x;
-                    secondClick.y = visiblityPoint.y;
+                if ( startHasBeenSet && robotEndPos.x == 0 && robotEndPos.y == 0 ) {
+                    robotEndPos.x = clickPoint.x;
+                    robotEndPos.y = clickPoint.y;
                 }
                 
                 // Store the first click as the starting point.
-                if (firstClick.x == 0 && firstClick.y == 0) {
-                    firstClick.x = visiblityPoint.x;
-                    firstClick.y = visiblityPoint.y;
+                if (robotStartPos.x == 0 && robotStartPos.y == 0) {
+                    robotStartPos.x = clickPoint.x;
+                    robotStartPos.y = clickPoint.y;
                     startHasBeenSet = true;
                 }
-                
                 
                 
             } else {
@@ -691,14 +669,9 @@ void keypress(unsigned char key, int x, int y) {
             // Exits the program.
             exit(0);
             break;
-        case 'e':
-            // Erases the polygon.
-            erase();
-            break;
         case 'd':
             polygons.push_back(polygonSegments);//DEBUG
             shortestpath =  findShortestPath();
-            
             glutPostRedisplay();
             break;
         case 'm':
