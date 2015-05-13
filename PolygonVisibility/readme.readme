@@ -7,8 +7,7 @@ A C++ implementation to compute the shortest path of a simple polygon robot arou
 
 - Key press:
 'e': Exists polygon obstacle drawing mode.
-'d': Calculates and draws the shortest path.
-'m': Makes the robot move automatically from start to finish.
+'m': Calculates and draws the shortest path. Makes the robot move automatically from start to finish.
 'q': Quits the program.
 
 - Color and shapes:
@@ -35,9 +34,9 @@ The shortest path is a BLUE PATH.
     a. If the mouse click leads to polygon self-intersection, no vertex/edge will be drawn.
     b. If the start or end point is outside the polygon, it won't be drawn.
 
-(2) Click 'd' to draw path.
+(2) Click 'm' to draw path.
 
-(3) Click 'm' to moe the robot along the path.
+(3) Click 'm' to move the robot along the path again in alternating directions.
 
 
 Note: Because we only allow vertical and horizontal movement, even though the algorithm will find the shortest path using only these movements, it may not look like it found the shortest path. This is because instead of looking like it moves diagonally from start to end,  it may go straight down and then across at a right angle because this is technically equivalent to taking alternating vertical and horizontal steps, which would look more like a diagonal movement.
