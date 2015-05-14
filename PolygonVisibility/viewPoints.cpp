@@ -91,6 +91,7 @@ bool moveForward = true; //direction to move robot
 int constant = ROBOT_SIZE;
 //Tracks what states have already been visited
 std::map<std::string, std::string> exploredMap;
+bool crazy = false; //Make crazy movement happen
 
 vector<vector<segment2D> >  polygons;
 // The array of segments that form the polygon currently being drawn.
@@ -149,6 +150,46 @@ void drawRobot(double robotCenterX, double robotCenterY,float angle){
     
     topRight.x = tempX;
     topRight.y = tempY;
+    
+    
+    segment2D leftVert = {topLeft,bottomLeft};
+    segment2D rightVert =  {topRight,bottomRight};
+    segment2D top =  {topLeft,topRight};
+    segment2D bottom =  {bottomLeft,bottomRight};
+    
+    glColor3fv(cyan);
+    drawSegment(leftVert);
+    drawSegment(rightVert);
+    drawSegment(top);
+    drawSegment(bottom);
+    
+}
+
+void drawRobotCrazy(double robotCenterX, double robotCenterY,float angle){
+    
+    //Generate four corners
+    point2D bottomRight = {0.0 + constant, 0.0 - constant};
+    bottomRight.x = ( bottomRight.x * cos(angle) -  bottomRight.y * sin(angle) )+ robotCenterX;
+    bottomRight.y = (bottomRight.x * sin(angle) +  bottomRight.y * cos(angle)) + robotCenterY;
+    
+
+    
+    point2D bottomLeft =  {0.0  - constant, 0.0 - constant};
+    bottomLeft.x = ( bottomLeft.x * cos(angle) -  bottomLeft.y * sin(angle) )+ robotCenterX;
+    bottomLeft.y = ( bottomLeft.x * sin(angle) +  bottomLeft.y * cos(angle) ) + robotCenterY;
+    
+
+    
+    point2D topLeft =  {0.0 - constant, 0.0 + constant};
+    topLeft.x = ( topLeft.x * cos(angle) -  topLeft.y * sin(angle) )+ robotCenterX;
+    topLeft.y = (topLeft.x * sin(angle) +  topLeft.y * cos(angle) ) + robotCenterY;
+
+    
+    point2D topRight =  {0.0 + constant, 0.0 + constant};
+    topRight.x = ( topRight.x * cos(angle) -  topRight.y * sin(angle) )+ robotCenterX;
+    topRight.y =( topRight.x * sin(angle) +  topRight.y * cos(angle) ) + robotCenterY;
+    
+
     
     
     segment2D leftVert = {topLeft,bottomLeft};
@@ -620,7 +661,7 @@ void mouse(int button, int state, int Mx, int My) {
         if (hasFinishedPolygons) {
             clickPoint = mouseClick;
             
-            if (!insidePolygon(clickPoint)) {
+            if (!insidePolygon(clickPoint) && !robotHitsObstacleWithRotation(clickPoint.x,clickPoint.y, 0)) {
                 
                 // Store the second click as the end point point.
                 if ( startHasBeenSet && robotEndPos.x == 0 && robotEndPos.y == 0 ) {
@@ -683,12 +724,62 @@ void mouse(int button, int state, int Mx, int My) {
 
 
 
+//Ignore this function. This was just for fun and make sthe robot spin when it reaches the goal.
+void  startCrazyRobot() {
+    crazy= true;
+    int numberOfRots = 300;
+    static int lastFrameTime = 0;
+    int now, elapsed_ms;
+    int i = 0;
+    double rotation = 0
+    ;
+    shortestpathAngle.clear();
+    for (int j = 0; j < numberOfRots; j++) {
+        
+        if (rotation >= 2 * M_PI) {
+            rotation = 0;
+        }
+        
+        rotation += 0.05;
+        shortestpathAngle.push_back(rotation);
+    }
+    
+    while (1) {
+        //Only animate until it reaches the goal state
+        if (i >= numberOfRots) {
+            break;
+        }
+        
+        now = glutGet (GLUT_ELAPSED_TIME);
+        elapsed_ms = now - lastFrameTime;
+        
+        // Move visibility point every time interval.
+        if (elapsed_ms  > 1) {
+            
+            robotPosition.x = robotEndPos.x;
+            robotPosition.y = robotEndPos.y;
+            robotAngle = shortestpathAngle.at(i);
+            lastFrameTime = now;
+            display();
+            
+            i++;
+ 
+        }
+ 
+    }
+      crazy= false;
+}
+
+
+
 // Automatically move the Robot from start to finish.
 void startMoving() {
     
     static int lastFrameTime = 0;
     int now, elapsed_ms;
-    int i = moveForward  ? 0 : shortestpath.size() - 1;
+    int i = 0;
+    
+  
     
     while (1) {
         //Only animate until it reaches the goal state
@@ -708,7 +799,7 @@ void startMoving() {
             lastFrameTime = now;
             display();
             
-            moveForward  ? i++ : i-- ;
+             i++;
             
             
         }
@@ -716,6 +807,8 @@ void startMoving() {
         
     }
 }
+
+
 
 
 /* ****************************** */
@@ -736,7 +829,12 @@ void display(void) {
     drawPolygonInProgress();
     drawStartEnd();
     drawPath();
-    drawRobot(robotPosition.x,robotPosition.y,robotAngle);
+    if (crazy){
+         drawRobotCrazy(robotPosition.x,robotPosition.y,robotAngle);
+    } else{
+         drawRobot(robotPosition.x,robotPosition.y,robotAngle);
+    }
+   
     
     if (!hasFinishedPolygon) {
         drawCirclesAroundVertices();
@@ -764,6 +862,10 @@ void keypress(unsigned char key, int x, int y) {
             // Exits obstacle drawing mode.
             hasFinishedPolygons = true;
             break;
+        case 'c':
+            // Exits obstacle drawing mode.
+            startCrazyRobot();
+            break;
         case 'm':
             //Draws shortest path
             if (shortestpath.empty()){
@@ -771,10 +873,11 @@ void keypress(unsigned char key, int x, int y) {
                 // Starts automatic movements.
                 startMoving();
                 moveForward = false;
+                startCrazyRobot();
             } else{
                 // Starts automatic movements.
-                startMoving
-                ();
+                startMoving();
+                startCrazyRobot();
                 moveForward = true;
             }
             glutPostRedisplay();
