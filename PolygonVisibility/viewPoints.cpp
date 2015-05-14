@@ -69,7 +69,7 @@ void drawRobot(double robotCenterX, double robotCenterY);
 bool hasBeenToSate(double x, double y);
 bool atGoal(double robotCenterX, double robotCenterY);
 bool outOfBounds(point2D pointToCheck);
-bool robotHitsObstacle(double robotCenterX, double robotCenterY);
+bool robotHitsObstacleWithRotation(double robotCenterX, double robotCenterY);
 State* getState(double robotCenterX, double  robotCenterY,State robotState);
 State* getDiagState(double robotCenterX, double  robotCenterY,State robotState);
 State* generateSuccessors(State currentRobotState);
@@ -89,6 +89,7 @@ float  robotAngle;
 bool startHasBeenSet = false; //Have selected robot start point
 bool moveForward = true; //direction to move robot
 int constant = ROBOT_SIZE;
+int numberOfExploredSates = 0;
 //Tracks what states have already been visited
 std::map<std::string, std::string> exploredMap;
 
@@ -201,47 +202,9 @@ bool outOfBounds(point2D pointToCheck){
 
 
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
-bool robotHitsObstacle(double robotCenterX, double robotCenterY){
-    
-    //Generate four corners
-    point2D bottomRight = {robotCenterX + constant, robotCenterY - constant};
-    point2D bottomLeft =  {robotCenterX - constant, robotCenterY - constant};
-    point2D topLeft =  {robotCenterX - constant, robotCenterY + constant};
-    point2D topRight =  {robotCenterX + constant, robotCenterY + constant};
-    
-    //First check if any of the points are out of bounds
-    if (outOfBounds(bottomRight) || outOfBounds(bottomLeft) || outOfBounds(topLeft) || outOfBounds(topRight)){
-        return true;
-    }
-    
-    //Generate for sides from corners
-    segment2D leftVert = {topLeft,bottomLeft};
-    segment2D rightVert =  {topRight,bottomRight};
-    segment2D top =  {topLeft,topRight};
-    segment2D bottom =  {bottomLeft,bottomRight};
-    
-    //Test for intersections
-    for (int i = 0; i < polygons.size(); i++) {
-        
-        vector<segment2D> polygonSegments = polygons.at(i);
-        
-        for (int j = 0; j < polygonSegments.size(); j++) {
-            if (intersect(leftVert, polygonSegments.at(j)) ||  intersect(rightVert, polygonSegments.at(j))  ||  intersect(top, polygonSegments.at(j))  || intersect(bottom, polygonSegments.at(j)) ){
-                return true;
-            }
-            
-        }
-        
-        
-    }
-    
-    
-    return false;
-}
-
-
-//Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
 bool robotHitsObstacleWithRotation(double robotCenterX, double robotCenterY,float angle){
+    //Increment number of states explored
+    numberOfExploredSates++;
     
     //Generate four corners
     point2D bottomRight = {0.0 + constant, 0.0 - constant};
@@ -305,7 +268,7 @@ bool robotHitsObstacleWithRotation(double robotCenterX, double robotCenterY,floa
 
 //Finds the first angle that does not cause a intersection with an obstacle for that location
 double findRotation(double robotCenterX, double robotCenterY){
-    
+    //Moves in 3 degrees increments
     for (float rotation = 0.0; rotation < 2 * M_PI; rotation += 0.05) {
         if (!robotHitsObstacleWithRotation(robotCenterX,robotCenterY,rotation)){
             return rotation;
@@ -314,30 +277,40 @@ double findRotation(double robotCenterX, double robotCenterY){
     return -1;
 }
 
-//Return the state at this new position given past state history
+//Returns a single state at this new position with a given rotation given past state history
 State* getState(double robotCenterX, double  robotCenterY,State robotState){
     
-    
+    //If the position has not been visited
     if (!hasBeenToSate(robotCenterX, robotCenterY)) {
         
+        //If the robot doesn't hit an obstacle create a new state  and add to priority queue
         if ( !robotHitsObstacleWithRotation(robotCenterX, robotCenterY,robotState.angle)) {
             State * nextPossibleState = new State();
+            //Location of Robot
             nextPossibleState->location = {robotCenterX, robotCenterY};
+            //Get the path from the previous state
             nextPossibleState->path = robotState.path;
+            //Update the path with current state
             nextPossibleState->path.push_back(nextPossibleState->location );
+            //Get heuristic distance from state to terminal sate
             nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+            //Increment the cost for BFS
             nextPossibleState->cost = robotState.cost + 1;
+            //Set state angle
             nextPossibleState->angle = robotState.angle;
+            //Add angle to path for animation
             nextPossibleState->pathAngle = robotState.pathAngle;
             nextPossibleState-> pathAngle.push_back(nextPossibleState->angle);
             
-            
+            //Add to priority queue
             nextStateQueue.push(*nextPossibleState);
             if (atGoal(robotCenterX, robotCenterY)) {
                 return nextPossibleState;
             }
             
         }else{
+            //If robot hits obstacle with current rotation, find a new rotation that prevents it from hitting.
+            //Create a state with this new rotation in this new position.
             double angle = findRotation(robotCenterX, robotCenterY);
             if (doubleEqual(-1.0, angle)){
                 return NULL;
@@ -366,12 +339,13 @@ State* getState(double robotCenterX, double  robotCenterY,State robotState){
 
 
 
-//Adds all viable sucessor states to current state to the priority queue
+//Adds all viable sucessor states to current state to the priority queue. Four states will be created after this method is called.
+//Not all states will have the same rotation value
 State* generateSuccessors(State currentRobotState){
     
     point2D robotCenter = currentRobotState.location;
     
-    //Up
+    //Up. Creates one state abve the current state with a certain angle
     State * state = getState(robotCenter.x, robotCenter.y + 1,currentRobotState);
     
     if ( state != NULL) {
@@ -405,16 +379,17 @@ State* generateSuccessors(State currentRobotState){
 //Called to find the shortest path around the obstacles. Returns this path.
 vector<point2D>  findShortestPath(){
     
+    //Create a new starting state
     State * nextPossibleState = new State();
     nextPossibleState->location = robotStartPos;
     nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
     generateSuccessors(*nextPossibleState);
     hasBeenToSate(robotStartPos.x, robotStartPos.y);
     
-    
+    //While there are more state to explore and the terminal state hs not been found
     State currentState;
     while (!nextStateQueue.empty()) {
-        
+        //Get best scoring state out of the priority queue
         currentState = nextStateQueue.top();
         nextStateQueue.pop();
         State *terminal = generateSuccessors(currentState);
@@ -758,8 +733,8 @@ void keypress(unsigned char key, int x, int y) {
             hasFinishedPolygons = true;
             polygons.clear();
             interestingTestCase();
-             glutPostRedisplay();
-          break;
+            glutPostRedisplay();
+            break;
         case 'e':
             // Exits obstacle drawing mode.
             hasFinishedPolygons = true;
@@ -768,6 +743,8 @@ void keypress(unsigned char key, int x, int y) {
             //Draws shortest path
             if (shortestpath.empty()){
                 shortestpath =  findShortestPath();
+                
+                printf("Number of States explored: %i",numberOfExploredSates);
                 // Starts automatic movements.
                 startMoving();
                 moveForward = false;
@@ -794,45 +771,8 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
     gluOrtho2D(0.0, (GLdouble) width, 0.0, (GLdouble) height);
 }
 
-
+//This just creates some poygon obstacles
 void interestingTestCase(){
-//    vector<segment2D> segments;
-//    
-//    segments.push_back({{61,87},{132,34}});
-//    
-//    segments.push_back({{132,34},{116,90}});
-//    
-//    segments.push_back({{116,90},{53,92}});
-//    
-//    segments.push_back({{53,92},{61,87}});
-//    
-//    vector<segment2D> thisPolygon = segments;
-//    
-//    polygons.push_back(thisPolygon);
-//    
-//    segments.clear();
-//    
-//    
-//    segments.push_back({{99,152},{235,82}});
-//    
-//    segments.push_back({{235,82},{391,97}});
-//    
-//    segments.push_back({{391,97},{238,238}});
-//    
-//    segments.push_back({{238,202},{180,82507}});
-//    segments.push_back({{180,250},{112,224}});
-//    
-//    segments.push_back({{112,224},{184,157}});
-//        segments.push_back({{184,157},{99,152}});
-//    
-//    
-//    
-//     thisPolygon = segments;
-//    
-//    polygons.push_back(thisPolygon);
-//    
-//    segments.clear();
-    
     
     vector<segment2D> segments;
     
@@ -898,11 +838,11 @@ void interestingTestCase(){
     startHasBeenSet = true;
     
     
-
+    
 }
 
 
-    
+
 
 
 
