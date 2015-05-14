@@ -16,8 +16,10 @@ typedef struct _point2d {
 typedef struct _state {
      point2D location;
     double distance;
+    double angle;
     int cost;
     std::vector<point2D> path;
+    std::vector<double> pathAngle;
 } State;
 
 

@@ -3,7 +3,7 @@
  Laura Toma, Ivy Xing, Zackery Leman
  
  What it does: See readme.
-
+ 
  */
 
 #include <iostream>
@@ -26,7 +26,7 @@
 using namespace std;
 
 
-const int ROBOT_SIZE = 5;
+const int ROBOT_SIZE = 20;
 const int WINDOWSIZE = 500;
 const int NUM_SEGMENTS = 800; // Number of segments that form the circle.
 
@@ -74,7 +74,8 @@ State* getState(double robotCenterX, double  robotCenterY,State robotState);
 State* getDiagState(double robotCenterX, double  robotCenterY,State robotState);
 State* generateSuccessors(State currentRobotState);
 vector<point2D>  findShortestPath();
-
+vector<point2D>  findShortestPath();
+void interestingTestCase();
 
 
 /**** Global variables ****/
@@ -84,12 +85,12 @@ point2D clickPoint; // The point of a click
 point2D robotStartPos = {0, 0};
 point2D robotEndPos = {0, 0};
 point2D robotPosition;
+float  robotAngle;
 bool startHasBeenSet = false; //Have selected robot start point
+bool moveForward = true; //direction to move robot
 int constant = ROBOT_SIZE;
 //Tracks what states have already been visited
 std::map<std::string, std::string> exploredMap;
-
-
 
 vector<vector<segment2D> >  polygons;
 // The array of segments that form the polygon currently being drawn.
@@ -99,6 +100,9 @@ vector<point2D> polygonVertices;
 
 //The Shortest path that the robot will travel on
 vector<point2D> shortestpath;
+
+//The Shortest path that the robot will travel on
+vector<double> shortestpathAngle;
 
 //Priority queue comparison function that uses the cost incurred by traveling on the current path and the heuristic euclidean distance from the position to the goal state.
 class CompareStateDistance {
@@ -113,17 +117,39 @@ public:
 //Priority queue for the frontier states
 priority_queue<State,vector<State>,CompareStateDistance> nextStateQueue;
 
-//Can track states that have been explored. Used only for debugging  when you wan to visualize search space
-vector<point2D>  exploredVector;
 
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
-void drawRobot(double robotCenterX, double robotCenterY){
+void drawRobot(double robotCenterX, double robotCenterY,float angle){
     
-     //Generate four corners
-    point2D bottomRight = {robotCenterX + constant, robotCenterY - constant};
-    point2D bottomLeft =  {robotCenterX - constant, robotCenterY - constant};
-    point2D topLeft =  {robotCenterX - constant, robotCenterY + constant};
-    point2D topRight =  {robotCenterX + constant, robotCenterY + constant};
+    //Generate four corners
+    point2D bottomRight = {0.0 + constant, 0.0 - constant};
+    double tempX = ( bottomRight.x * cos(angle) -  bottomRight.y * sin(angle) )+ robotCenterX;
+    double  tempY = (bottomRight.x * sin(angle) +  bottomRight.y * cos(angle)) + robotCenterY;
+    
+    bottomRight.x = tempX;
+    bottomRight.y = tempY;
+    
+    point2D bottomLeft =  {0.0  - constant, 0.0 - constant};
+    tempX = ( bottomLeft.x * cos(angle) -  bottomLeft.y * sin(angle) )+ robotCenterX;
+    tempY = ( bottomLeft.x * sin(angle) +  bottomLeft.y * cos(angle) ) + robotCenterY;
+    
+    bottomLeft.x = tempX;
+    bottomLeft.y = tempY;
+    
+    point2D topLeft =  {0.0 - constant, 0.0 + constant};
+    tempX = ( topLeft.x * cos(angle) -  topLeft.y * sin(angle) )+ robotCenterX;
+    tempY = (topLeft.x * sin(angle) +  topLeft.y * cos(angle) ) + robotCenterY;
+    
+    topLeft.x = tempX;
+    topLeft.y = tempY;
+    
+    point2D topRight =  {0.0 + constant, 0.0 + constant};
+    tempX = ( topRight.x * cos(angle) -  topRight.y * sin(angle) )+ robotCenterX;
+    tempY =( topRight.x * sin(angle) +  topRight.y * cos(angle) ) + robotCenterY;
+    
+    topRight.x = tempX;
+    topRight.y = tempY;
+    
     
     segment2D leftVert = {topLeft,bottomLeft};
     segment2D rightVert =  {topRight,bottomRight};
@@ -135,8 +161,6 @@ void drawRobot(double robotCenterX, double robotCenterY){
     drawSegment(rightVert);
     drawSegment(top);
     drawSegment(bottom);
-
-    
     
 }
 
@@ -215,50 +239,131 @@ bool robotHitsObstacle(double robotCenterX, double robotCenterY){
     return false;
 }
 
+
+//Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
+bool robotHitsObstacleWithRotation(double robotCenterX, double robotCenterY,float angle){
+    
+    //Generate four corners
+    point2D bottomRight = {0.0 + constant, 0.0 - constant};
+    double tempX = ( bottomRight.x * cos(angle) -  bottomRight.y * sin(angle) )+ robotCenterX;
+    double  tempY = (bottomRight.x * sin(angle) +  bottomRight.y * cos(angle)) + robotCenterY;
+    
+    bottomRight.x = tempX;
+    bottomRight.y = tempY;
+    
+    point2D bottomLeft =  {0.0  - constant, 0.0 - constant};
+    tempX = ( bottomLeft.x * cos(angle) -  bottomLeft.y * sin(angle) )+ robotCenterX;
+    tempY =( bottomLeft.x * sin(angle) +  bottomLeft.y * cos(angle) ) + robotCenterY;
+    
+    bottomLeft.x = tempX;
+    bottomLeft.y = tempY;
+    
+    point2D topLeft =  {0.0 - constant, 0.0 + constant};
+    tempX = ( topLeft.x * cos(angle) -  topLeft.y * sin(angle) )+ robotCenterX;
+    tempY = (topLeft.x * sin(angle) +  topLeft.y * cos(angle) ) + robotCenterY;
+    
+    topLeft.x = tempX;
+    topLeft.y = tempY;
+    
+    point2D topRight =  {0.0 + constant, 0.0 + constant};
+    tempX = ( topRight.x * cos(angle) -  topRight.y * sin(angle) )+ robotCenterX;
+    tempY =( topRight.x * sin(angle) +  topRight.y * cos(angle) ) + robotCenterY;
+    
+    topRight.x = tempX;
+    topRight.y = tempY;
+    
+    
+    //First check if any of the points are out of bounds
+    if (outOfBounds(bottomRight) || outOfBounds(bottomLeft) || outOfBounds(topLeft) || outOfBounds(topRight)){
+        return true;
+    }
+    
+    //Generate for sides from corners
+    segment2D leftVert = {topLeft,bottomLeft};
+    segment2D rightVert =  {topRight,bottomRight};
+    segment2D top =  {topLeft,topRight};
+    segment2D bottom =  {bottomLeft,bottomRight};
+    
+    //Test for intersections
+    for (int i = 0; i < polygons.size(); i++) {
+        
+        vector<segment2D> polygonSegments = polygons.at(i);
+        
+        for (int j = 0; j < polygonSegments.size(); j++) {
+            if (intersect(leftVert, polygonSegments.at(j)) ||  intersect(rightVert, polygonSegments.at(j))  ||  intersect(top, polygonSegments.at(j))  || intersect(bottom, polygonSegments.at(j)) ){
+                return true;
+            }
+            
+        }
+        
+        
+    }
+    
+    
+    return false;
+}
+
+//Finds the first angle that does not cause a intersection with an obstacle for that location
+double findRotation(double robotCenterX, double robotCenterY){
+    
+    for (float rotation = 0.0; rotation < 2 * M_PI; rotation += 0.05) {
+        if (!robotHitsObstacleWithRotation(robotCenterX,robotCenterY,rotation)){
+            return rotation;
+        }
+    }
+    return -1;
+}
+
 //Return the state at this new position given past state history
 State* getState(double robotCenterX, double  robotCenterY,State robotState){
     
     
-    if (!hasBeenToSate(robotCenterX, robotCenterY) && !robotHitsObstacle(robotCenterX, robotCenterY)) {
+    if (!hasBeenToSate(robotCenterX, robotCenterY)) {
         
-        State * nextPossibleState = new State();
-        nextPossibleState->location = {robotCenterX, robotCenterY};
-        nextPossibleState->path = robotState.path;
-        nextPossibleState->path.push_back(nextPossibleState->location );
-        nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
-        nextPossibleState->cost = robotState.cost + 1;
-        exploredVector.push_back(nextPossibleState->location);
-        
-        nextStateQueue.push(*nextPossibleState);
-        if (atGoal(robotCenterX, robotCenterY)) {
-            return nextPossibleState;
+        if ( !robotHitsObstacleWithRotation(robotCenterX, robotCenterY,robotState.angle)) {
+            State * nextPossibleState = new State();
+            nextPossibleState->location = {robotCenterX, robotCenterY};
+            nextPossibleState->path = robotState.path;
+            nextPossibleState->path.push_back(nextPossibleState->location );
+            nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+            nextPossibleState->cost = robotState.cost + 1;
+            nextPossibleState->angle = robotState.angle;
+            nextPossibleState->pathAngle = robotState.pathAngle;
+            nextPossibleState-> pathAngle.push_back(nextPossibleState->angle);
+            
+            
+            nextStateQueue.push(*nextPossibleState);
+            if (atGoal(robotCenterX, robotCenterY)) {
+                return nextPossibleState;
+            }
+            
+        }else{
+            double angle = findRotation(robotCenterX, robotCenterY);
+            if (doubleEqual(-1.0, angle)){
+                return NULL;
+            }
+            
+            State * nextPossibleState = new State();
+            nextPossibleState->location = {robotCenterX, robotCenterY};
+            nextPossibleState->path = robotState.path;
+            nextPossibleState->path.push_back(nextPossibleState->location );
+            nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+            nextPossibleState->cost = robotState.cost + 1;
+            nextPossibleState->angle = angle;
+            nextPossibleState->pathAngle = robotState.pathAngle;
+            nextPossibleState-> pathAngle.push_back(nextPossibleState->angle);
+            
+            
+            nextStateQueue.push(*nextPossibleState);
+            if (atGoal(robotCenterX, robotCenterY)) {
+                return nextPossibleState;
+            }
+            
         }
     }
     return NULL;
 }
 
-//Return the state at this new position given past state history. For diagonals
-State* getDiagState(double robotCenterX, double  robotCenterY,State robotState){
-    
-    
-    if (!hasBeenToSate(robotCenterX, robotCenterY) && !robotHitsObstacle(robotCenterX, robotCenterY)) {
-        
-        State * nextPossibleState = new State();
-        nextPossibleState->location = {robotCenterX, robotCenterY};
-        nextPossibleState->path = robotState.path;
-        nextPossibleState->path.push_back(nextPossibleState->location );
-        nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
-        nextPossibleState->cost = robotState.cost + sqrt(2.0);
-        exploredVector.push_back(nextPossibleState->location);
-        
-        nextStateQueue.push(*nextPossibleState);
-        if (atGoal(robotCenterX, robotCenterY)) {
-            return nextPossibleState;
-        }
-        
-    }
-    return NULL;
-}
 
 
 //Adds all viable sucessor states to current state to the priority queue
@@ -293,38 +398,6 @@ State* generateSuccessors(State currentRobotState){
         return state;
     }
     
-    
-    
-    //    //Up Right
-    //    state = getDiagState(robotCenter.x + 1, robotCenter.y + 1,currentRobotState);
-    //
-    //    if ( state != NULL) {
-    //        return state;
-    //    }
-    //
-    //    //Down Right
-    //    state = getDiagState(robotCenter.x + 1, robotCenter.y - 1,currentRobotState);
-    //
-    //    if ( state != NULL) {
-    //        return state;
-    //    }
-    //
-    //    // Up Left
-    //    state = getDiagState(robotCenter.x - 1, robotCenter.y + 1,currentRobotState);
-    //    if ( state != NULL) {
-    //        return state;
-    //    }
-    //
-    //    // Down Left
-    //
-    //    state = getDiagState(robotCenter.x - 1, robotCenter.y - 1,currentRobotState);
-    //    if ( state != NULL) {
-    //        return state;
-    //    }
-    //
-    //
-    
-    
     return NULL;
     
 }
@@ -346,6 +419,7 @@ vector<point2D>  findShortestPath(){
         nextStateQueue.pop();
         State *terminal = generateSuccessors(currentState);
         if (terminal != NULL) {
+            shortestpathAngle = terminal->pathAngle;
             //Returns the shortest path
             return terminal->path;
         }
@@ -490,17 +564,6 @@ void drawStartEnd(void) {
     }
 }
 
-//Draws the area that has been explored
-void drawExplored(){
-    for (int i = 0; i < exploredVector.size(); i++) {
-        glColor3fv(yellow);
-        //glBegin(GL_POINT);
-        drawCircle(exploredVector.at(i).x, exploredVector.at(i).y, 3, 20, 1);
-        //glVertex2f(exploredVector.at(i).x, exploredVector.at(i).y);
-        //glEnd();
-    }
-}
-
 
 /**** Computation Functions ****/
 
@@ -621,10 +684,12 @@ void mouse(int button, int state, int Mx, int My) {
 
 
 // Automatically move the Robot from start to finish.
-void startMoving(void) {
+void startMoving() {
+    
     static int lastFrameTime = 0;
     int now, elapsed_ms;
-    int i = 0;
+    int i = moveForward  ? 0 : shortestpath.size() - 1;
+    
     while (1) {
         //Only animate until it reaches the goal state
         if (i >= shortestpath.size()) {
@@ -639,18 +704,18 @@ void startMoving(void) {
             
             robotPosition.x = shortestpath.at(i).x;
             robotPosition.y = shortestpath.at(i).y;
+            robotAngle = shortestpathAngle.at(i);
             lastFrameTime = now;
             display();
             
-            i++;
+            moveForward  ? i++ : i-- ;
+            
             
         }
         
         
     }
 }
-
-
 
 
 /* ****************************** */
@@ -665,14 +730,13 @@ void display(void) {
     glScalef(2.0/WINDOWSIZE, 2.0/WINDOWSIZE, 1.0);
     glTranslatef(-WINDOWSIZE/2, -WINDOWSIZE/2, 0);
     
-
+    
     // Draw polygons.
     drawPolygons();
     drawPolygonInProgress();
     drawStartEnd();
     drawPath();
-    //drawExplored();//Debug
-    drawRobot(robotPosition.x,robotPosition.y);
+    drawRobot(robotPosition.x,robotPosition.y,robotAngle);
     
     if (!hasFinishedPolygon) {
         drawCirclesAroundVertices();
@@ -689,19 +753,33 @@ void keypress(unsigned char key, int x, int y) {
             // Exits the program.
             exit(0);
             break;
+        case ' ':
+            // Exits obstacle drawing mode.
+            hasFinishedPolygons = true;
+            polygons.clear();
+            interestingTestCase();
+             glutPostRedisplay();
+          break;
         case 'e':
             // Exits obstacle drawing mode.
             hasFinishedPolygons = true;
             break;
-        case 'd':
+        case 'm':
             //Draws shortest path
-            shortestpath =  findShortestPath();
+            if (shortestpath.empty()){
+                shortestpath =  findShortestPath();
+                // Starts automatic movements.
+                startMoving();
+                moveForward = false;
+            } else{
+                // Starts automatic movements.
+                startMoving
+                ();
+                moveForward = true;
+            }
             glutPostRedisplay();
             break;
-        case 'm':
-            // Starts automatic movements.
-            startMoving();
-            break;
+            
     }
 }
 
@@ -715,3 +793,117 @@ void reshape(GLsizei width, GLsizei height) {  // GLsizei for non-negative integ
     glLoadIdentity();             // Reset
     gluOrtho2D(0.0, (GLdouble) width, 0.0, (GLdouble) height);
 }
+
+
+void interestingTestCase(){
+//    vector<segment2D> segments;
+//    
+//    segments.push_back({{61,87},{132,34}});
+//    
+//    segments.push_back({{132,34},{116,90}});
+//    
+//    segments.push_back({{116,90},{53,92}});
+//    
+//    segments.push_back({{53,92},{61,87}});
+//    
+//    vector<segment2D> thisPolygon = segments;
+//    
+//    polygons.push_back(thisPolygon);
+//    
+//    segments.clear();
+//    
+//    
+//    segments.push_back({{99,152},{235,82}});
+//    
+//    segments.push_back({{235,82},{391,97}});
+//    
+//    segments.push_back({{391,97},{238,238}});
+//    
+//    segments.push_back({{238,202},{180,82507}});
+//    segments.push_back({{180,250},{112,224}});
+//    
+//    segments.push_back({{112,224},{184,157}});
+//        segments.push_back({{184,157},{99,152}});
+//    
+//    
+//    
+//     thisPolygon = segments;
+//    
+//    polygons.push_back(thisPolygon);
+//    
+//    segments.clear();
+    
+    
+    vector<segment2D> segments;
+    
+    segments.push_back({{61,87},{132,34}});
+    
+    segments.push_back({{132,34},{116,90}});
+    
+    segments.push_back({{116,90},{53,92}});
+    
+    segments.push_back({{53,92},{61,87}});
+    
+    vector<segment2D> thisPolygon = segments;
+    
+    polygons.push_back(thisPolygon);
+    
+    segments.clear();
+    
+    
+    segments.push_back({{99,152},{235,82}});
+    
+    segments.push_back({{235,82},{391,97}});
+    
+    segments.push_back({{391,97},{238,202}});
+    
+    segments.push_back({{238,202},{180,250}});
+    segments.push_back({{180,250},{112,224}});
+    
+    segments.push_back({{112,224},{184,157}});
+    segments.push_back({{184,157},{99,152}});
+    
+    
+    
+    thisPolygon = segments;
+    
+    polygons.push_back(thisPolygon);
+    
+    segments.clear();
+    
+    
+    segments.push_back({{99,398},{125,320}});
+    
+    segments.push_back({{125,320},{281,252}});
+    
+    segments.push_back({{281,252},{297,342}});
+    
+    segments.push_back({{297,342},{199,373}});
+    segments.push_back({{199,373},{278,412}});
+    
+    segments.push_back({{278,412},{150,431}});
+    segments.push_back({{150,431},{99,398}});
+    
+    
+    
+    
+    thisPolygon = segments;
+    
+    polygons.push_back(thisPolygon);
+    
+    segments.clear();
+    robotStartPos = {386,358};
+    robotEndPos = {49,185};
+    
+    startHasBeenSet = true;
+    
+    
+
+}
+
+
+    
+
+
+
+
