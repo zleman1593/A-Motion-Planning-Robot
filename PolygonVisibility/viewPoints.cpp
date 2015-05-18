@@ -26,7 +26,7 @@
 using namespace std;
 
 
-const int ROBOT_SIZE = 20;
+const int ROBOT_SIZE = 20;//Robot radius
 const int WINDOWSIZE = 500;
 const int NUM_SEGMENTS = 800; // Number of segments that form the circle.
 
@@ -102,7 +102,7 @@ vector<point2D> polygonVertices;
 //The Shortest path that the robot will travel on
 vector<point2D> shortestpath;
 
-//The Shortest path that the robot will travel on
+//The angle for every position along the shortest path that the robot will travel on
 vector<double> shortestpathAngle;
 
 //Priority queue comparison function that uses the cost incurred by traveling on the current path and the heuristic euclidean distance from the position to the goal state.
@@ -122,7 +122,7 @@ priority_queue<State,vector<State>,CompareStateDistance> nextStateQueue;
 //Check if any of the four sides of the rectangular (square) robot intersects any of the edges of the obstacles
 void drawRobot(double robotCenterX, double robotCenterY,float angle){
     
-    //Generate four corners
+    //Generate four corners with correct rotation
     point2D bottomRight = {0.0 + constant, 0.0 - constant};
     double tempX = ( bottomRight.x * cos(angle) -  bottomRight.y * sin(angle) )+ robotCenterX;
     double  tempY = (bottomRight.x * sin(angle) +  bottomRight.y * cos(angle)) + robotCenterY;
@@ -151,7 +151,7 @@ void drawRobot(double robotCenterX, double robotCenterY,float angle){
     topRight.x = tempX;
     topRight.y = tempY;
     
-    
+    //Generate edges of robot
     segment2D leftVert = {topLeft,bottomLeft};
     segment2D rightVert =  {topRight,bottomRight};
     segment2D top =  {topLeft,topRight};
@@ -392,6 +392,10 @@ vector<point2D>  findShortestPath(){
         //Get best scoring state out of the priority queue
         currentState = nextStateQueue.top();
         nextStateQueue.pop();
+        std::ostringstream oss;
+        oss << floor(currentState.location.x) << " " << floor(currentState.location.y);
+        std::string tempString = oss.str();
+        exploredMap[tempString] = "";
         State *terminal = generateSuccessors(currentState);
         if (terminal != NULL) {
             shortestpathAngle = terminal->pathAngle;

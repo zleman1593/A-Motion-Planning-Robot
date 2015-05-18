@@ -39,8 +39,7 @@ The shortest path is a BLUE PATH.
 (3) Click 'm' to move the robot along the path again in alternating directions.
 
 
-Note: Because we only allow vertical and horizontal movement, even though the algorithm will find the shortest path using only these movements, it may not look like it found the shortest path. This is because instead of looking like it moves diagonally from start to end,  it may go straight down and then across at a right angle because this is technically equivalent to taking alternating vertical and horizontal steps, which would look more like a diagonal movement.
- We have use a heuristic modified BFS (like A*) to find shortest path because edge weights are all 1 since we don't allow diaginal movement. (i.e we didnt implement the Relaxing part of Dijkstra)
+Note: We only allow vertical and horizontal movement. The algorithm will find the shortest path using only these movements. It may or may not look like it moves diagonally. This is because it may go straight down and then across at a right angle because this is technically equivalent to taking alternating vertical and horizontal steps (which looks like diagonal movement). We have use a heuristic modified BFS (like A*) to find shortest path because edge weights are all 1 since we don't allow diagonal movement. (i.e we didnt implement the Relaxing part of Dijkstra because it wasnt need to find shortest path in this case)
 
 
 
