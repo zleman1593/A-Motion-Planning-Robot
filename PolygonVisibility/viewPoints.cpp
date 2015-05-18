@@ -339,6 +339,75 @@ State* getState(double robotCenterX, double  robotCenterY,State robotState){
 
 
 
+//Returns a single state at this new position with a given rotation given past state history
+State* getDiagState(double robotCenterX, double  robotCenterY,State robotState){
+    
+    //If the position has not been visited
+    if (!hasBeenToSate(robotCenterX, robotCenterY)) {
+        
+        //If the robot doesn't hit an obstacle create a new state  and add to priority queue
+        if ( !robotHitsObstacleWithRotation(robotCenterX, robotCenterY,robotState.angle)) {
+            State * nextPossibleState = new State();
+            //Location of Robot
+            nextPossibleState->location = {robotCenterX, robotCenterY};
+            //Get the path from the previous state
+            nextPossibleState->path = robotState.path;
+            //Update the path with current state
+            nextPossibleState->path.push_back(nextPossibleState->location );
+            //Get heuristic distance from state to terminal sate
+            nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+            //Increment the cost for BFS
+            nextPossibleState->cost = robotState.cost + sqrt(2.0);
+            //Set state angle
+            nextPossibleState->angle = robotState.angle;
+            //Add angle to path for animation
+            nextPossibleState->pathAngle = robotState.pathAngle;
+            nextPossibleState-> pathAngle.push_back(nextPossibleState->angle);
+            
+
+            //exploredVector.push_back(nextPossibleState->location);
+            
+            
+            //Add to priority queue
+            nextStateQueue.push(*nextPossibleState);
+            if (atGoal(robotCenterX, robotCenterY)) {
+                return nextPossibleState;
+            }
+            
+        }else{
+            //If robot hits obstacle with current rotation, find a new rotation that prevents it from hitting.
+            //Create a state with this new rotation in this new position.
+            double angle = findRotation(robotCenterX, robotCenterY);
+            if (doubleEqual(-1.0, angle)){
+                return NULL;
+            }
+            
+            State * nextPossibleState = new State();
+            nextPossibleState->location = {robotCenterX, robotCenterY};
+            nextPossibleState->path = robotState.path;
+            nextPossibleState->path.push_back(nextPossibleState->location );
+            nextPossibleState->distance = distance_(nextPossibleState->location,robotEndPos);
+            nextPossibleState->cost = robotState.cost + sqrt(2.0);
+            nextPossibleState->angle = angle;
+            nextPossibleState->pathAngle = robotState.pathAngle;
+            nextPossibleState-> pathAngle.push_back(nextPossibleState->angle);
+            
+            //exploredVector.push_back(nextPossibleState->location);
+            
+            
+            
+            nextStateQueue.push(*nextPossibleState);
+            if (atGoal(robotCenterX, robotCenterY)) {
+                return nextPossibleState;
+            }
+            
+        }
+    }
+    return NULL;
+}
+
+
+
 //Adds all viable sucessor states to current state to the priority queue. Four states will be created after this method is called.
 //Not all states will have the same rotation value
 State* generateSuccessors(State currentRobotState){
@@ -371,6 +440,37 @@ State* generateSuccessors(State currentRobotState){
     if ( state != NULL) {
         return state;
     }
+    
+    
+    
+        //Up Right
+        state = getDiagState(robotCenter.x + 1, robotCenter.y + 1,currentRobotState);
+    
+        if ( state != NULL) {
+            return state;
+        }
+    
+        //Down Right
+        state = getDiagState(robotCenter.x + 1, robotCenter.y - 1,currentRobotState);
+    
+        if ( state != NULL) {
+            return state;
+        }
+    
+        // Up Left
+        state = getDiagState(robotCenter.x - 1, robotCenter.y + 1,currentRobotState);
+        if ( state != NULL) {
+            return state;
+        }
+    
+        // Down Left
+    
+        state = getDiagState(robotCenter.x - 1, robotCenter.y - 1,currentRobotState);
+        if ( state != NULL) {
+            return state;
+        }
+    
+    
     
     return NULL;
     
